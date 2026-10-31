@@ -14,9 +14,12 @@ window.SITE_SETTINGS = {
   // The thin gold strip at the very top that says "demo version". Set to false before launch.
   showDemoBanner: true,
 
-  // Logo shown in the header and footer. Replace images/logo.svg with the real logo,
-  // or put the new file in images/ and write its name here.
-  logo: "images/logo.svg",
+  // Official logo (white version, for the dark header and footer): Arabic page / English page.
+  // The hero emblem is images/logo-mark.svg; the 404 page uses images/logo-mark-dark.svg.
+  logos: {
+    ar: "images/logo-ar.svg",
+    en: "images/logo-en.svg"
+  },
 
   // ----- Contact -----
   phone: "+966505516056",          // used when someone taps "call"

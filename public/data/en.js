@@ -8,12 +8,12 @@ window.SITE_TEXT.en = {
 
   meta: {
     home: {
-      title: "Khalid Al-Liwa Lawyers & Legal Consultants | Jubail",
+      title: "Khalid Allewa Lawyers and Consultants | Jubail",
       description: "A law firm in Jubail, Saudi Arabia, advising and representing individuals and companies in commercial, labor, real estate, family, criminal and arbitration matters."
     },
     login: {
-      title: "Employee Login | Khalid Al-Liwa Lawyers & Legal Consultants",
-      description: "Staff portal of Khalid Al-Liwa Lawyers & Legal Consultants."
+      title: "Employee Login | Khalid Allewa Lawyers and Consultants",
+      description: "Staff portal of Khalid Allewa Lawyers and Consultants."
     }
   },
 
@@ -26,8 +26,7 @@ window.SITE_TEXT.en = {
   },
 
   brand: {
-    name: "Khalid Al-Liwa",
-    tagline: "Lawyers & Legal Consultants"
+    fullName: "Khalid Allewa Lawyers and Consultants"   // read out by screen readers in place of the logo
   },
 
   nav: {
@@ -71,7 +70,7 @@ window.SITE_TEXT.en = {
   intro: {
     eyebrow: "Welcome",
     title: "Your legal partner in the Eastern Province",
-    text: "Khalid Al-Liwa Lawyers & Legal Consultants is a Saudi law firm based in Jubail, with a dedicated team of lawyers and legal consultants. We work with clarity and transparency, and stay with our clients at every step, from the first consultation to the right resolution.",
+    text: "Khalid Allewa Lawyers and Consultants is a Saudi law firm based in Jubail, with a dedicated team of lawyers and legal consultants. We work with clarity and transparency, and stay with our clients at every step, from the first consultation to the right resolution.",
     more: "Learn more about us"
   },
 
@@ -317,7 +316,7 @@ window.SITE_TEXT.en = {
       { days: "Friday – Saturday", time: "Closed" }
     ],
     hoursNote: "Working hours are placeholders and will be confirmed.",
-    whatsappMessage: "Hello, I would like to ask about the services of Khalid Al-Liwa Lawyers & Legal Consultants.",
+    whatsappMessage: "Hello, I would like to ask about the services of Khalid Allewa Lawyers and Consultants.",
     map: {
       title: "Our Location",
       placeholder: "Placeholder map. An interactive map will be added later.",
@@ -332,7 +331,7 @@ window.SITE_TEXT.en = {
     hoursTitle: "Working Hours",
     license: "License No.: 000000 (placeholder)",
     disclaimer: "The information on this website is for general purposes only and does not constitute legal advice.",
-    copyright: "© {year} Khalid Al-Liwa Lawyers & Legal Consultants. All rights reserved."
+    copyright: "© {year} Khalid Allewa Lawyers and Consultants. All rights reserved."
   },
 
   whatsapp: {

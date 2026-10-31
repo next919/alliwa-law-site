@@ -115,7 +115,7 @@
       if (value != null) el.textContent = value;
     });
     $$('[data-years]').forEach((el) => { el.textContent = (S.experienceYears || 0) + '+'; });
-    $$('[data-logo]').forEach((img) => { if (S.logo) img.src = S.logo; });
+    $$('[data-logo]').forEach((img) => { const src = S.logos && S.logos[img.dataset.logo]; if (src) img.src = src; });
     $$('[data-link]').forEach(setLink);
     const banner = $('[data-demo-banner]');
     if (banner) banner.hidden = !S.showDemoBanner;

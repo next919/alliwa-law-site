@@ -1,10 +1,10 @@
-# Khalid Al-Liwa Lawyers & Legal Consultants — website (demo)
+# Khalid Allewa Lawyers and Consultants (خالد اللواء محامون ومستشارون) — website (demo)
 
 A bilingual (Arabic RTL / English LTR) one-page website with an employee-login placeholder.
 Plain HTML, CSS and JavaScript — no framework, no build step. The `public/` folder is the whole site.
 
-> **Draft status:** all names, bios, photos, the email, licence number, years of experience and
-> working hours are placeholders. The site tells search engines not to index it until launch
+> **Draft status:** the logo and colours are the firm's official ones; all names, bios, photos, the email,
+> licence number, years of experience and working hours are placeholders. The site tells search engines not to index it until launch
 > (see *Before launch* below).
 
 ## Folder structure
@@ -24,7 +24,7 @@ public/                    ← upload / publish this folder
 ├── data/settings.js       Phone, WhatsApp, email, map, years, team order & photos
 ├── data/ar.js             ALL Arabic text
 ├── data/en.js             ALL English text
-└── images/                Logo, team photos, background pattern
+└── images/                Official logo (SVG), team photos, background pattern, link-preview image
 ```
 
 ## Changing content (no design files involved)
@@ -37,10 +37,10 @@ public/                    ← upload / publish this folder
 | Team members: add, remove or reorder | `data/settings.js` → `team`, then add the text under `team.members` in both language files with the same `id` |
 | Team photos | Put the photo in `images/team/` and write its path in `data/settings.js` (e.g. `photo: "images/team/khalid.jpg"`). Portrait, about 800×960 px. Empty `""` shows the placeholder |
 | Practice areas | `data/settings.js` → `practiceAreas` (order and icon) + `practice.areas` in both language files |
-| Logo | Replace `images/logo.svg` (or set `logo` in `data/settings.js` to a new file, e.g. a PNG) |
+| Logo | `images/logo-ar.svg` / `logo-en.svg` (white, header and footer), `logo-mark.svg` (silver emblem in the hero), `logo-mark-dark.svg` (404 page), `favicon.svg`. All drawn from the official Arabic_Logos.pdf / English_Logos.pdf. File names are set under `logos` in `data/settings.js` |
 | Live Google map | Google Maps → Share → *Embed a map* → copy only the `src="…"` link into `mapEmbed` in `data/settings.js` |
 | Default language | `defaultLanguage` in `data/settings.js` (`"ar"` or `"en"`) |
-| Colours / fonts | Top of `css/style.css` (`:root`) |
+| Colours / fonts | Top of `css/style.css` (`:root`). Brand palette: Charcoal Gray `#36454F`, Brushed Silver `#C0C0C0`, Pure White `#FFFFFF` |
 
 Editing rules for the data files: change only the text inside the quotes `"…"`, and keep every
 comma, bracket and key name. If text needs a double quote inside it, use the Arabic/curly quotes
@@ -79,7 +79,6 @@ to the new domain.
 ## Before launch
 
 - [ ] Replace placeholder text, names, bios, photos, email, licence number, years and hours
-- [ ] Real logo in `images/logo.svg`
 - [ ] `showDemoBanner: false` in `data/settings.js`
 - [ ] Remove the `<meta name="robots" content="noindex, nofollow">` line from `index.html` and `login.html`
 - [ ] Remove the `X-Robots-Tag` line from `public/_headers`

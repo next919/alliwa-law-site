@@ -2,11 +2,11 @@
   <!-- PLACEHOLDER PHOTO: used for any team member whose "photo" is empty in data/settings.js -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#efe9dd"/>
-      <stop offset="1" stop-color="#ddd3bf"/>
+      <stop offset="0" stop-color="#eef1f3"/>
+      <stop offset="1" stop-color="#d9dfe3"/>
     </linearGradient>
   </defs>
   <rect width="400" height="480" fill="url(#bg)"/>
-  <circle cx="200" cy="188" r="74" fill="#c8bb9d"/>
-  <path d="M52 480C52 392 118 324 200 324s148 68 148 156Z" fill="#c8bb9d"/>
+  <circle cx="200" cy="188" r="74" fill="#b9c2c8"/>
+  <path d="M52 480C52 392 118 324 200 324s148 68 148 156Z" fill="#b9c2c8"/>
 </svg>
