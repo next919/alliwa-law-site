@@ -15,7 +15,7 @@
   <script>
     /* follow the display options chosen on the site (night mode, colours, shape); language stays as it is */
     try {
-      [['theme', 'theme-mode', ['dark']], ['accent', 'theme-accent', ['navy', 'green']], ['shape', 'theme-shape', ['sharp', 'round']]]
+      [['theme', 'theme-mode', ['dark']], ['accent', 'theme-accent', ['navy', 'burgundy']], ['shape', 'theme-shape', ['sharp', 'round']]]
         .forEach(function (o) { var v = localStorage.getItem(o[1]); if (o[2].indexOf(v) > -1) document.documentElement.setAttribute('data-' + o[0], v); });
     } catch (e) {}
   </script>

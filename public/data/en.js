@@ -40,7 +40,7 @@ window.SITE_TEXT.en = {
     colors: "Colours",
     official: "Official",
     navy: "Navy & gold",
-    green: "Green & bronze",
+    burgundy: "Burgundy & silver",
     shape: "Shape",
     soft: "Soft",
     sharp: "Sharp",

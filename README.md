@@ -61,9 +61,9 @@ Useful links: `?lang=en` or `?lang=ar` at the end of the address opens the site 
 ## Display options (demo)
 
 The **Display options** button in the grey strip at the top opens a panel with: light / dark mode, three colour
-schemes (Official charcoal & silver, Navy & gold, Green & bronze) and three shapes (Soft, Sharp, Round).
+schemes (Official charcoal & silver, Navy & gold, Burgundy & silver) and three shapes (Soft, Sharp, Round).
 Choices apply at once and are remembered on that device. A link can open a given look directly, e.g.
-`?accent=navy&theme=dark&shape=sharp` (values: `theme` light/dark, `accent` official/navy/green, `shape` soft/sharp/round).
+`?accent=navy&theme=dark&shape=sharp` (values: `theme` light/dark, `accent` official/navy/burgundy, `shape` soft/sharp/round).
 
 All of it is CSS custom properties: the defaults in `:root` and the variations in section 1b of `css/style.css`.
 To make one choice the permanent look, copy its values into `:root` (or keep the panel and only remove the strip).

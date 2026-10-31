@@ -43,7 +43,7 @@ window.SITE_TEXT.ar = {
     colors: "الألوان",
     official: "الرسمية",
     navy: "كحلي وذهبي",
-    green: "أخضر وبرونزي",
+    burgundy: "عنابي وفضي",
     shape: "الشكل",
     soft: "ناعم",
     sharp: "حاد",

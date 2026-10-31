@@ -89,9 +89,10 @@ html[lang="ar"] {
 /* ---------- 1b. Display options: night mode, colour schemes, shapes ----------
    Set on <html> by js/boot.js before the page is drawn (data-theme, data-accent, data-shape),
    chosen in the "display options" panel. The defaults above are the official identity. */
+/* Navy & gold: a clear royal blue with warm gold, light backgrounds tinted cool */
 html[data-accent="navy"] {
-  --char-950: #0e1626; --char-900: #142039; --char-800: #1a2a4a; --char-700: #22355c; --char-600: #354b7c;
-  --char-rgb: 34 53 92; --char-950-rgb: 14 22 38;
+  --char-950: #0a1834; --char-900: #0f2147; --char-800: #152c5c; --char-700: #1d3a75; --char-600: #2f5196;
+  --char-rgb: 29 58 117; --char-950-rgb: 10 24 52;
   --silver-300: #f3e9d2; --silver-400: #e3cd9d; --silver-500: #c9a96e; --silver-600: #b0915a;
   --silver-rgb: 201 169 110;
   --accent-text-light: #7a6034; --accent-text-dark: #dcc290;
@@ -100,18 +101,14 @@ html[data-accent="navy"] {
   --metal-border: #b8975c;
   --metal-text: linear-gradient(100deg, #fbf0d4 0%, #d4b67d 40%, #f1e1b8 65%, #b8975c 100%);
   --band: linear-gradient(120deg, #f3e6c6 0%, #d7bd86 40%, #efdfb7 65%, #c3a46a 100%);
+  --paper-50: #f7f9fc; --paper-100: #ecf1f8; --paper-200: #dde5f0; --line: #d8e0eb;
 }
-html[data-accent="green"] {
-  --char-950: #0b1713; --char-900: #10241d; --char-800: #153026; --char-700: #1c3d31; --char-600: #2d5646;
-  --char-rgb: 28 61 49; --char-950-rgb: 11 23 19;
-  --silver-300: #efe3d0; --silver-400: #dcc5a2; --silver-500: #bf9b6b; --silver-600: #a5825a;
-  --silver-rgb: 191 155 107;
-  --accent-text-light: #72563a; --accent-text-dark: #d8bf98;
-  --brushed: linear-gradient(135deg, #f4e6cf 0%, #bf9b6b 45%, #e8d4b3 70%, #9c7647 100%);
-  --brushed-hover: linear-gradient(135deg, #f9eedc, #cba97b 45%, #efdfc4 70%, #a8825a);
-  --metal-border: #a98457;
-  --metal-text: linear-gradient(100deg, #f7ead3 0%, #cfae80 40%, #ecdcc0 65%, #a98457 100%);
-  --band: linear-gradient(120deg, #f1e4cd 0%, #d3b68c 40%, #ecdcc2 65%, #bc9969 100%);
+/* Burgundy & silver: a deep wine red with the official silver, light backgrounds tinted warm */
+html[data-accent="burgundy"] {
+  --char-950: #2a0c16; --char-900: #3a1120; --char-800: #4b172a; --char-700: #631f38; --char-600: #82324f;
+  --char-rgb: 99 31 56; --char-950-rgb: 42 12 22;
+  --accent-text-light: #6b5d62; --accent-text-dark: #cfc4c8;
+  --paper-50: #fbf8f8; --paper-100: #f6eef0; --paper-200: #ecdfe3; --line: #e8dadf;
 }
 html[data-theme="dark"] {
   color-scheme: dark;
@@ -139,9 +136,8 @@ html[data-theme="dark"] {
   --shadow: 0 16px 36px -16px rgb(0 0 0 / .75);
   --shadow-lg: 0 28px 64px -24px rgb(0 0 0 / .85);
 }
-/* night mode keeps the accent lines of the navy and green schemes (plain night mode uses grey) */
+/* night mode keeps the gold accent lines of the navy scheme (official and burgundy use grey-silver) */
 html[data-theme="dark"][data-accent="navy"] { --silver-600: #8c7449; }
-html[data-theme="dark"][data-accent="green"] { --silver-600: #86694a; }
 html[data-shape="sharp"] {
   --radius-sm: 2px; --radius-btn: 2px; --radius: 3px; --radius-lg: 4px;
   --radius-icon: 3px; --radius-circle: 4px; --radius-pill: 3px; --arch: 4px 4px 0 0;
@@ -512,8 +508,8 @@ html[data-theme="dark"] .theme-panel { --focus: var(--silver-500); }
 .theme-opt .icon { width: 1.35rem; height: 1.35rem; }
 .swatch { display: block; width: 36px; height: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .15); }
 .swatch-official { background: linear-gradient(135deg, #36454f 0 55%, #c0c0c0 55%); }
-.swatch-navy { background: linear-gradient(135deg, #22355c 0 55%, #c9a96e 55%); }
-.swatch-green { background: linear-gradient(135deg, #1c3d31 0 55%, #bf9b6b 55%); }
+.swatch-navy { background: linear-gradient(135deg, #1d3a75 0 55%, #c9a96e 55%); }
+.swatch-burgundy { background: linear-gradient(135deg, #631f38 0 55%, #c0c0c0 55%); }
 .shape-preview { display: block; width: 36px; height: 22px; border: 2px solid currentColor; }
 .shape-soft { border-radius: 7px; }
 .shape-sharp { border-radius: 0; }
@@ -743,7 +739,7 @@ html[lang="en"] .brand-lockup[data-logo="ar"] { display: none; }
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(var(--char-950-rgb) / .74) 0%, rgb(var(--char-950-rgb) / .84) 50%, rgb(var(--char-950-rgb) / .94) 100%);
+  background: linear-gradient(180deg, rgb(var(--char-rgb) / .8) 0%, rgb(var(--char-950-rgb) / .84) 55%, rgb(var(--char-950-rgb) / .95) 100%);
 }
 .hero-pattern {
   display: none;

@@ -16,7 +16,7 @@
   // then the visitor's last choice in the options panel. No choice = the official look.
   var OPTIONS = {
     theme:  { key: 'theme-mode',   def: 'light',    values: ['dark'] },
-    accent: { key: 'theme-accent', def: 'official', values: ['navy', 'green'] },
+    accent: { key: 'theme-accent', def: 'official', values: ['navy', 'burgundy'] },
     shape:  { key: 'theme-shape',  def: 'soft',     values: ['sharp', 'round'] }
   };
   var params = null;
