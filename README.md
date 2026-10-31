@@ -107,13 +107,17 @@ to the new domain.
 
 `login.html` → `portal.html`. **Demo account:** `info@kalidlaw.com` / `Allewa@2026`.
 
-- **E-contracts:** create a fee agreement (client, matter, fees with or without 15% VAT, payment, lawyer,
-  Arabic or English) → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
+- **E-contracts:** create a fee agreement (client, matter, fees with or without 15% VAT, payment, lawyer;
+  language: Arabic, English, or **Arabic & English**) → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
   → a signing link for the client (copy, WhatsApp, email) → on `sign.html` the client reads it, signs with a
   finger or by typing, ticks the consent and enters a code (demo code **1234**) → the client's page offers
   *Send confirmation to the firm* (WhatsApp to the firm's number, or copy) → opening that confirmation link in the
   portal marks the agreement *Signed* with the signature, the time and the history. *Print / save as PDF* gives a
   clean A4 copy.
+- **Bilingual agreements:** a two-column table, English left and Arabic right, each article under a dark heading
+  row ("Article 5: … | البند الخامس: …"), numbered points (1. 2. 3. / ١. ٢. ٣.), a language clause (the Arabic text
+  prevails) and the firm's emblem as a faint watermark. The form adds English fields (marked EN) for the free text;
+  names, numbers and amounts are entered once. On phones each article shows its Arabic, then its English.
 - **Links work on any phone:** with no server, the signing link carries a copy of the agreement after the `#`
   (never sent to a server), and the confirmation link carries it back with the signature (drawn signatures as
   compact strokes). Both are a few hundred characters long. The fingerprint is recalculated on each side and matches.

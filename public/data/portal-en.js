@@ -88,7 +88,8 @@
       city: "City (competent court)",
       cityDefault: "Jubail",
       lang: "Agreement language",
-      langs: { ar: "العربية", en: "English" },
+      langs: { ar: "العربية", en: "English", both: "Arabic & English" },
+      bothHint: "Write the details in Arabic and add their English text in the fields marked EN. Numbers and amounts are entered once.",
       terms: "Additional terms",
       termsPh: "Optional",
       total: "Total incl. VAT",
@@ -100,7 +101,8 @@
         required: "This field is required.",
         phone: "Invalid mobile number, e.g. 0501234567.",
         email: "Invalid email address.",
-        amount: "Enter a valid amount."
+        amount: "Enter a valid amount.",
+        englishToo: "Add the English text for this field too."
       }
     },
     detail: {
@@ -245,14 +247,19 @@
       { h: "Subject and scope of work", p: "The first party shall provide legal services in “{matter}” in the area of {area}, including: {scope}" },
       { h: "Fees", p: "The second party shall pay the first party fees of {fees}, {schedule}" },
       { h: "Expenses", p: "Court fees and actual expenses needed for the work, such as official fees, translation and expert fees, are borne by the second party and are not included in the fees unless otherwise agreed in writing." },
-      { h: "Obligations of the first party", p: "The first party shall exercise due professional care in performing the work in accordance with the law and the lawyers' Code of Professional Conduct, and keep the second party informed. The first party's obligation is one of means, not of result." },
-      { h: "Obligations of the second party", p: "The second party shall provide accurate information and documents in good time, issue the power of attorney needed for the work, and pay the fees when due." },
+      { h: "Obligations of the first party", p: "The first party shall:", items: ["Exercise due professional care in performing the work in accordance with the law and the lawyers' Code of Professional Conduct.", "Keep the second party informed of developments in the work."], note: "The first party's obligation is one of means, not of result." },
+      { h: "Obligations of the second party", p: "The second party shall:", items: ["Provide the first party with accurate and complete information and documents in good time.", "Issue the power of attorney the first party needs to carry out the work.", "Pay the fees when due."] },
       { h: "Term and termination", p: "This agreement takes effect on signature {duration}. Either party may end it by written notice, in which case the first party is entitled to fees for the work already done." },
       { h: "Confidentiality and data protection", p: "The first party shall treat the second party's data and documents in strict confidence under the lawyers' Code of Professional Conduct and the Personal Data Protection Law, and disclose them only with the second party's consent or where the law requires." },
       { h: "Electronic signature", p: "Both parties acknowledge that approving and signing this agreement electronically is a binding signature with full legal effect under the Electronic Transactions Law of the Kingdom of Saudi Arabia." },
       { h: "Governing law", p: "This agreement is governed by the laws of the Kingdom of Saudi Arabia, and the competent courts in {city} have jurisdiction over any dispute arising from it." }
     ],
     extraTerms: "Additional terms",
+    // heading of each article: "Article 1: Preamble"
+    article: "Article {n}: {h}",
+    // bilingual agreements only
+    language: { h: "Language", p: "This agreement is made in Arabic and English. In case of any discrepancy between the two texts, the Arabic text shall prevail." },
+    bi: { parties: "The parties", fees: "Fees summary" },
     copies: { h: "Copies", p: "This agreement was made electronically. A signed copy is kept by the first party, and the second party receives its copy upon signing." },
     fees: {
       excl: "SAR {amount}, plus VAT (15%) of SAR {vat}, making a total of SAR {total}",

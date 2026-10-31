@@ -71,7 +71,9 @@
       return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
     } catch (e) { return ''; }
   }
-  const contractBody = (c) => JSON.stringify([c.id, c.lang, c.createdAt, c.lawyer, c.client, c.matter, c.fees, c.duration, c.city, c.terms]);
+  const contractBody = (c) => JSON.stringify(c.lang === 'both'
+    ? [c.id, c.lang, c.createdAt, c.lawyer, c.client, c.matter, c.fees, c.duration, c.city, c.terms, c.en || {}]
+    : [c.id, c.lang, c.createdAt, c.lawyer, c.client, c.matter, c.fees, c.duration, c.city, c.terms]);
   const randomToken = () => { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 20); };
 
   // ---------- the demo agreements ----------
@@ -80,10 +82,11 @@
     const tag = ' (' + t('portal.sample', 'ar') + ')';
     return [
       {
-        id: 'FA-2026-0003', status: 'draft', lang: 'ar', createdAt: now - 2 * hr, updatedAt: now - 2 * hr, lawyer: 'khalid',
+        id: 'FA-2026-0003', status: 'draft', lang: 'both', createdAt: now - 2 * hr, updatedAt: now - 2 * hr, lawyer: 'khalid',
         client: { name: 'مؤسسة النموذج للمقاولات' + tag, idType: 'cr', idNumber: '7000000003', phone: '0500000003', email: 'client3@example.com', address: 'الجبيل الصناعية' },
         matter: { area: 'commercial', title: 'صياغة ومراجعة عقود توريد', scope: 'مراجعة نماذج عقود التوريد الحالية، وصياغة نموذج موحد، وتقديم مذكرة بالملاحظات النظامية.' },
         fees: { amount: 12000, vat: 'excl', schedule: 'two', custom: '' }, duration: '', city: 'الجبيل', terms: '',
+        en: { clientName: 'Al Namoothaj Contracting Est. (demo)', address: 'Jubail Industrial City', title: 'Drafting and reviewing supply contracts', scope: 'Reviewing the current supply contract templates, drafting a unified template, and providing a memo of legal observations.', custom: '', duration: '', city: 'Jubail', terms: '' },
         events: [{ type: 'created', at: now - 2 * hr }],
       },
       {
@@ -135,19 +138,21 @@
   const packJson = (v) => b64u.enc(new TextEncoder().encode(JSON.stringify(v)));
   const unpackJson = (str) => JSON.parse(new TextDecoder().decode(b64u.dec(str)));
   const str = (v) => (v == null ? '' : String(v));
+  // English counterparts of a bilingual agreement, always in this order (the fingerprint depends on it)
+  const EN_KEYS = ['clientName', 'address', 'title', 'scope', 'custom', 'duration', 'city', 'terms'];
   function packContract(c) {
     const sent = (c.events || []).find((e) => e.type === 'sent');
     return [1, c.id, c.token, c.lang, c.createdAt, sent ? sent.at : c.updatedAt, c.lawyer,
       str(c.client.name), str(c.client.idType), str(c.client.idNumber), str(c.client.phone), str(c.client.email), str(c.client.address),
       str(c.matter.area), str(c.matter.title), str(c.matter.scope),
       c.fees.amount, str(c.fees.vat), str(c.fees.schedule), str(c.fees.custom),
-      str(c.duration), str(c.city), str(c.terms)];
+      str(c.duration), str(c.city), str(c.terms)].concat(c.lang === 'both' ? EN_KEYS.map((k) => str((c.en || {})[k])) : []);
   }
   function unpackContract(a) {
     if (!Array.isArray(a) || a[0] !== 1 || a.length < 23) return null;
     const [, id, token, lang, createdAt, sentAt, lawyer, name, idType, idNumber, phone, email, address, area, title, scope, amount, vat, schedule, custom, duration, city, terms] = a;
     // same key order as the portal's own records, so the fingerprint comes out identical
-    return {
+    const c = {
       id, token, status: 'sent', lang, createdAt, updatedAt: sentAt, lawyer,
       client: { name, idType, idNumber, phone, email, address },
       matter: { area, title, scope },
@@ -155,8 +160,14 @@
       duration, city, terms, hash: '', remote: true,
       events: [{ type: 'created', at: createdAt }, { type: 'sent', at: sentAt }],
     };
+    if (lang === 'both') {
+      if (a.length < 23 + EN_KEYS.length) return null;
+      c.en = {};
+      EN_KEYS.forEach((k, i) => { c.en[k] = a[23 + i]; });
+    }
+    return c;
   }
-  const signLink = (c) => new URL('sign.html?c=' + encodeURIComponent(c.id) + '&k=' + encodeURIComponent(c.token) + '&lang=' + (c.lang || 'ar') + '#v1.' + packJson(packContract(c)), location.href).href;
+  const signLink = (c) => new URL('sign.html?c=' + encodeURIComponent(c.id) + '&k=' + encodeURIComponent(c.token) + '&lang=' + (c.lang === 'en' ? 'en' : 'ar') + '#v1.' + packJson(packContract(c)), location.href).href;
   function returnLink(c) {
     const sg = c.signature || {};
     const viewed = (c.events || []).find((e) => e.type === 'viewed');
@@ -217,23 +228,101 @@
   }
 
   // ---------- the agreement document (portal, signing page and print) ----------
-  function renderContract(c) {
-    const L = c.lang || 'ar';
+  // One language ('ar' or 'en'), or both ('both'): a two-column table with English on the left and Arabic on
+  // the right, each article under a dark heading row, the way the firm lays out its bilingual agreements.
+  const isBi = (c) => c.lang === 'both';
+  const span = (L, html) => `<span class="cd-l" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">${html}</span>`;
+  const per = (langs, fn) => langs.map((L) => span(L, esc(fn(L)))).join('');
+
+  // the agreement's own fields in one language (a bilingual agreement keeps its English in c.en)
+  function fieldsIn(c, L) {
+    const en = isBi(c) && L === 'en' ? (c.en || {}) : null;
+    const pick = (base, key) => (en && en[key] ? en[key] : base) || '';
+    const other = isBi(c) ? (c.en || {}).terms : '';
+    return {
+      clientName: pick(c.client.name, 'clientName'), address: pick(c.client.address, 'address'),
+      title: pick(c.matter.title, 'title'), scope: pick(c.matter.scope, 'scope'), custom: pick(c.fees.custom, 'custom'),
+      duration: pick(c.duration, 'duration'), city: pick(c.city, 'city'),
+      terms: (L === 'en' && isBi(c) ? other || c.terms : c.terms || other) || '',
+    };
+  }
+
+  // everything one language column needs
+  function docParts(c, L) {
     const T = (k) => t('contract.' + k, L);
+    const f = fieldsIn(c, L);
     const n = feeNumbers(c);
     const vars = {
-      matter: esc(c.matter.title), area: esc(areaName(c.matter.area, L)), scope: esc(c.matter.scope),
-      duration: esc(c.duration || t('portal.form.durationDefault', L)), city: esc(c.city || t('portal.form.cityDefault', L)),
+      matter: esc(f.title), area: esc(areaName(c.matter.area, L)), scope: esc(f.scope),
+      duration: esc(f.duration || t('portal.form.durationDefault', L)), city: esc(f.city || t('portal.form.cityDefault', L)),
       fees: fill(T('fees.' + c.fees.vat), { amount: money(n.amount), vat: money(n.vat), total: money(n.total) }),
-      schedule: fill(T('schedule.' + c.fees.schedule), { custom: esc(c.fees.custom) }),
+      schedule: fill(T('schedule.' + c.fees.schedule), { custom: esc(f.custom) }),
     };
-    const clauses = (t('contract.clauses', L) || []).slice();
-    if (c.terms) clauses.push({ h: T('extraTerms'), p: esc(c.terms), raw: true });
+    const clauses = (t('contract.clauses', L) || []).map((cl) => Object.assign({}, cl));
+    if (f.terms) clauses.push({ h: T('extraTerms'), p: f.terms, raw: true });
+    if (isBi(c)) clauses.push(t('contract.language', L));
     clauses.push(t('contract.copies', L));
-    const sig = c.signature;
+    const ordinals = t('contract.ordinals', 'ar') || [];
+    const heading = (i, h) => fill(T('article'), { n: L === 'ar' ? ordinals[i] || String(i + 1) : String(i + 1), h });
+    const body = (cl) => (cl.p ? `<p>${cl.raw ? esc(cl.p) : fill(esc(cl.p), vars)}</p>` : '')
+      + (cl.items ? `<ol class="cd-items">${cl.items.map((it) => `<li>${fill(esc(it), vars)}</li>`).join('')}</ol>` : '')
+      + (cl.note ? `<p>${fill(esc(cl.note), vars)}</p>` : '');
     const idTypeLabel = t('portal.form.idTypes.' + (c.client.idType || 'id'), L);
     const row = (label, value) => (value ? `<div><dt>${esc(label)}</dt><dd><bdi>${esc(value)}</bdi></dd></div>` : '');
+    const partyA = `<h3>${esc(T('partyA'))}</h3><p class="cd-party-name">${esc(T('firmName'))}</p>`
+      + `<p>${esc(fill(T('firmRep'), { lawyer: memberName(c.lawyer || 'khalid', L) }))}</p>`
+      + `<p>${esc(fill(T('firmLicence'), { licence: licenceNo(L) }))}</p><p>${esc(T('firmCity'))}</p>`;
+    const partyB = `<h3>${esc(T('partyB'))}</h3><p class="cd-party-name">${esc(f.clientName)}</p>`
+      + `<dl>${row(T('labels.id') + ' (' + idTypeLabel + ')', c.client.idNumber)}${row(T('labels.phone'), c.client.phone)}`
+      + `${row(T('labels.email'), c.client.email)}${row(T('labels.address'), f.address)}</dl>`;
+    const cur = esc(T('table.currency'));
+    const sum = [
+      [T('table.fees'), `<bdi>${money(n.amount)} ${cur}</bdi>`],
+      c.fees.vat !== 'none' ? [T('table.vat'), `<bdi>${money(n.vat)} ${cur}</bdi>`] : null,
+      [T('table.total'), `<bdi>${money(n.total)} ${cur}</bdi>`, true],
+      [T('table.schedule'), esc(t('portal.form.schedules.' + c.fees.schedule, L)) + (c.fees.schedule === 'custom' && f.custom ? ': ' + esc(f.custom) : '')],
+    ].filter(Boolean);
+    return { T, clauses, heading, body, partyA, partyB, sum, preamble: fill(esc(T('preamble')), vars) };
+  }
+
+  function signsHtml(c, langs) {
     const sent = (c.events || []).find((e) => e.type === 'sent');
+    const sig = c.signature;
+    const lab = (k) => per(langs, (L) => t('contract.' + k, L));
+    return `
+  <section class="cd-signs">
+    <h3>${lab('signatures')}</h3>
+    <div class="cd-sign-grid">
+      <div class="cd-sign">
+        <p class="cd-sign-party">${lab('partyA')}</p>
+        ${sent ? `<p class="cd-stamp">${lab('approved')}</p><p class="cd-sign-name">${per(langs, (L) => memberName(c.lawyer || 'khalid', L))}</p><p class="cd-sign-date">${per(langs, (L) => fmtDate(sent.at, L, true))}</p>` : '<p class="cd-sign-wait">—</p>'}
+      </div>
+      <div class="cd-sign">
+        <p class="cd-sign-party">${lab('partyB')}</p>
+        ${sig ? `${sig.method === 'drawn' && sig.image ? `<img class="cd-sig-img" src="${esc(sig.image)}" alt="">` : `<p class="cd-sig-typed">${esc(sig.name)}</p>`}
+          <p class="cd-sign-name">${esc(sig.name)}</p>
+          <p class="cd-sign-date">${per(langs, (L) => t('contract.signedAt', L) + ' ' + fmtDate(sig.at, L, true))}</p>
+          <p class="cd-sign-method">${lab('method.' + sig.method)}</p>` : `<p class="cd-sign-wait">${lab('pending')}</p>`}
+      </div>
+    </div>
+  </section>`;
+  }
+
+  function footHtml(c, langs) {
+    return `
+  <footer class="cd-foot">
+    ${c.hash ? `<p><span>${per(langs, (L) => t('contract.fingerprint', L))}</span><code dir="ltr">${esc(c.hash.match(/.{1,8}/g).join(' '))}</code></p>` : ''}
+    <p>${per(langs, (L) => t('contract.footer', L))}</p>
+  </footer>`;
+  }
+
+  function renderContract(c) {
+    return isBi(c) ? renderBilingual(c) : renderSingle(c);
+  }
+
+  function renderSingle(c) {
+    const L = c.lang === 'en' ? 'en' : 'ar';
+    const d = docParts(c, L), T = d.T;
     return `
 <article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">
   <p class="cd-demo">${esc(T('demoMark'))}</p>
@@ -245,57 +334,49 @@
       <div><dt>${esc(T('date'))}</dt><dd>${esc(fmtDate(c.createdAt, L))}<span class="cd-hijri">${esc(fmtHijri(c.createdAt, L))}</span></dd></div>
     </dl>
   </header>
-  <section class="cd-parties">
-    <div class="cd-party">
-      <h3>${esc(T('partyA'))}</h3>
-      <p class="cd-party-name">${esc(T('firmName'))}</p>
-      <p>${esc(fill(T('firmRep'), { lawyer: memberName(c.lawyer || 'khalid', L) }))}</p>
-      <p>${esc(fill(T('firmLicence'), { licence: licenceNo(L) }))}</p>
-      <p>${esc(T('firmCity'))}</p>
-    </div>
-    <div class="cd-party">
-      <h3>${esc(T('partyB'))}</h3>
-      <p class="cd-party-name">${esc(c.client.name)}</p>
-      <dl>
-        ${row(T('labels.id') + ' (' + idTypeLabel + ')', c.client.idNumber)}
-        ${row(T('labels.phone'), c.client.phone)}
-        ${row(T('labels.email'), c.client.email)}
-        ${row(T('labels.address'), c.client.address)}
-      </dl>
-    </div>
-  </section>
-  <p class="cd-preamble">${fill(esc(T('preamble')), vars)}</p>
+  <section class="cd-parties"><div class="cd-party">${d.partyA}</div><div class="cd-party">${d.partyB}</div></section>
+  <p class="cd-preamble">${d.preamble}</p>
   <ol class="cd-clauses">
-    ${clauses.map((cl) => `<li><h4>${esc(cl.h)}</h4><p>${cl.raw ? cl.p : fill(esc(cl.p), vars)}</p></li>`).join('')}
+    ${d.clauses.map((cl, i) => `<li><h4>${esc(d.heading(i, cl.h))}</h4>${d.body(cl)}</li>`).join('')}
   </ol>
-  <table class="cd-fees">
-    <tbody>
-      <tr><th scope="row">${esc(T('table.fees'))}</th><td><bdi>${money(n.amount)} ${esc(T('table.currency'))}</bdi></td></tr>
-      ${c.fees.vat !== 'none' ? `<tr><th scope="row">${esc(T('table.vat'))}</th><td><bdi>${money(n.vat)} ${esc(T('table.currency'))}</bdi></td></tr>` : ''}
-      <tr class="cd-total"><th scope="row">${esc(T('table.total'))}</th><td><bdi>${money(n.total)} ${esc(T('table.currency'))}</bdi></td></tr>
-      <tr><th scope="row">${esc(T('table.schedule'))}</th><td>${esc(t('portal.form.schedules.' + c.fees.schedule, L))}${c.fees.schedule === 'custom' && c.fees.custom ? ': ' + esc(c.fees.custom) : ''}</td></tr>
-    </tbody>
-  </table>
-  <section class="cd-signs">
-    <h3>${esc(T('signatures'))}</h3>
-    <div class="cd-sign-grid">
-      <div class="cd-sign">
-        <p class="cd-sign-party">${esc(T('partyA'))}</p>
-        ${sent ? `<p class="cd-stamp">${esc(T('approved'))}</p><p class="cd-sign-name">${esc(memberName(c.lawyer || 'khalid', L))}</p><p class="cd-sign-date">${esc(fmtDate(sent.at, L, true))}</p>` : `<p class="cd-sign-wait">—</p>`}
-      </div>
-      <div class="cd-sign">
-        <p class="cd-sign-party">${esc(T('partyB'))}</p>
-        ${sig ? `${sig.method === 'drawn' && sig.image ? `<img class="cd-sig-img" src="${esc(sig.image)}" alt="">` : `<p class="cd-sig-typed">${esc(sig.name)}</p>`}
-          <p class="cd-sign-name">${esc(sig.name)}</p>
-          <p class="cd-sign-date">${esc(T('signedAt'))} ${esc(fmtDate(sig.at, L, true))}</p>
-          <p class="cd-sign-method">${esc(T('method.' + sig.method))}</p>` : `<p class="cd-sign-wait">${esc(T('pending'))}</p>`}
-      </div>
-    </div>
-  </section>
-  <footer class="cd-foot">
-    ${c.hash ? `<p><span>${esc(T('fingerprint'))}</span><code dir="ltr">${esc(c.hash.match(/.{1,8}/g).join(' '))}</code></p>` : ''}
-    <p>${esc(T('footer'))}</p>
-  </footer>
+  <table class="cd-fees"><tbody>
+    ${d.sum.map(([k, v, total]) => `<tr${total ? ' class="cd-total"' : ''}><th scope="row">${esc(k)}</th><td>${v}</td></tr>`).join('')}
+  </tbody></table>
+  ${signsHtml(c, [L])}
+  ${footHtml(c, [L])}
+</article>`;
+  }
+
+  function renderBilingual(c) {
+    const A = docParts(c, 'ar'), E = docParts(c, 'en');
+    const LL = ['ar', 'en'];
+    const cell = (L, html, tag) => `<${tag || 'td'} class="cd-${L}" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">${html}</${tag || 'td'}>`;
+    const head = (en, ar) => `<tr class="cd-bi-head">${cell('en', esc(en), 'th')}${cell('ar', esc(ar), 'th')}</tr>`;
+    const pair = (en, ar) => `<tr>${cell('en', en)}${cell('ar', ar)}</tr>`;
+    const sum = (d) => `<dl class="cd-sum">${d.sum.map(([k, v, total]) => `<div${total ? ' class="cd-total"' : ''}><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+    let rows = head(t('contract.bi.parties', 'en'), t('contract.bi.parties', 'ar'))
+      + pair(E.partyA + E.partyB, A.partyA + A.partyB)
+      + pair(`<p>${E.preamble}</p>`, `<p>${A.preamble}</p>`);
+    const count = Math.max(A.clauses.length, E.clauses.length);
+    for (let i = 0; i < count; i++) {
+      const ce = E.clauses[i] || {}, ca = A.clauses[i] || {};
+      rows += head(E.heading(i, ce.h || ''), A.heading(i, ca.h || '')) + pair(E.body(ce), A.body(ca));
+    }
+    rows += head(t('contract.bi.fees', 'en'), t('contract.bi.fees', 'ar')) + pair(sum(E), sum(A));
+    return `
+<article class="contract-doc contract-bi" lang="ar" dir="rtl">
+  <p class="cd-demo">${per(LL, (L) => t('contract.demoMark', L))}</p>
+  <header class="cd-head">
+    <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${per(LL, (L) => t('contract.firmName', L))}</span></div>
+    <h2 class="cd-title">${per(LL, (L) => t('contract.title', L))}</h2>
+    <dl class="cd-meta">
+      <div><dt>${per(LL, (L) => t('contract.no', L))}</dt><dd><bdi dir="ltr">${esc(c.id)}</bdi></dd></div>
+      <div><dt>${per(LL, (L) => t('contract.date', L))}</dt><dd>${esc(fmtDate(c.createdAt, 'ar'))}<span class="cd-hijri">${esc(fmtHijri(c.createdAt, 'ar'))}</span>${span('en', esc(fmtDate(c.createdAt, 'en')))}</dd></div>
+    </dl>
+  </header>
+  <table class="cd-bi" dir="ltr"><tbody>${rows}</tbody></table>
+  ${signsHtml(c, LL)}
+  ${footHtml(c, LL)}
 </article>`;
   }
 
@@ -570,20 +651,24 @@
   function viewForm(c) {
     const F = (k) => esc(t('portal.form.' + k));
     const v = c || { lang: lang(), lawyer: 'khalid', client: { idType: 'id' }, matter: { area: (S.practiceAreas && S.practiceAreas[0] && S.practiceAreas[0].id) || 'commercial' }, fees: { vat: 'excl', schedule: 'two' }, city: '' };
+    const bi = v.lang === 'both';
+    // opts.en: the English counterpart of a field, shown only for a bilingual agreement; opts.custom: payment details
     const field = (name, label, value, opts = {}) => `
-      <div class="field${opts.full ? ' field-full' : ''}">
-        <label for="cf-${name}">${label}${opts.optional ? ` <span class="optional">${F('optional')}</span>` : ' <span class="req" aria-hidden="true">*</span>'}</label>
+      <div class="field${opts.full ? ' field-full' : ''}${opts.en ? ' field-en' : ''}"${opts.en ? ' data-en' : ''}${opts.custom ? ' data-custom-field' : ''}${(opts.en && !bi) || (opts.custom && v.fees.schedule !== 'custom') ? ' hidden' : ''}>
+        <label for="cf-${name}">${label}${opts.en ? ' <span class="lang-tag" lang="en">EN</span>' : ''}${opts.optional ? ` <span class="optional">${F('optional')}</span>` : ' <span class="req" aria-hidden="true">*</span>'}</label>
         ${opts.textarea
-          ? `<textarea class="input" id="cf-${name}" name="${name}" rows="${opts.rows || 3}"${opts.optional ? '' : ' required'} placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">${esc(value)}</textarea>`
-          : `<input class="input${opts.ltr ? ' input-ltr' : ''}" id="cf-${name}" name="${name}" type="${opts.type || 'text'}"${opts.ltr ? ' dir="ltr"' : ''}${opts.inputmode ? ` inputmode="${opts.inputmode}"` : ''}${opts.optional ? '' : ' required'} value="${esc(value)}" placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">`}
+          ? `<textarea class="input" id="cf-${name}" name="${name}" rows="${opts.rows || 3}"${opts.en ? ' dir="ltr" lang="en"' : ''} placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">${esc(value)}</textarea>`
+          : `<input class="input${opts.ltr ? ' input-ltr' : ''}" id="cf-${name}" name="${name}" type="${opts.type || 'text'}"${opts.ltr || opts.en ? ' dir="ltr"' : ''}${opts.en ? ' lang="en"' : ''}${opts.inputmode ? ` inputmode="${opts.inputmode}"` : ''} value="${esc(value)}" placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">`}
         <p class="field-error" id="cf-${name}-err" hidden></p>
       </div>`;
+    const en = v.en || {};
     const select = (name, label, value, options) => `
       <div class="field">
         <label for="cf-${name}">${label}</label>
         <select class="input" id="cf-${name}" name="${name}">${options.map(([val, text]) => `<option value="${esc(val)}"${val === value ? ' selected' : ''}>${esc(text)}</option>`).join('')}</select>
       </div>`;
     const areas = (S.practiceAreas || []).map((a) => [a.id, t('practice.areas.' + a.id + '.title')]).concat([['other', t('portal.form.areaOther')]]);
+    const langSelectHtml = select('lang', F('lang'), v.lang, [['ar', t('portal.form.langs.ar')], ['en', t('portal.form.langs.en')], ['both', t('portal.form.langs.both')]]);
     const lawyers = (S.team || []).filter((m) => m.group === 'partners').map((m) => [m.id, t('team.members.' + m.id + '.name')]);
     return `
       <header class="p-head">
@@ -591,15 +676,23 @@
         <h1>${F(c ? 'titleEdit' : 'titleNew')}</h1>${c ? `<p><bdi dir="ltr">${esc(c.id)}</bdi></p>` : ''}</div>
       </header>
       <form class="p-form" data-contract-form novalidate>
+        <section class="p-card p-lang-card">
+          <div class="form-grid">
+            ${langSelectHtml}
+            <p class="p-muted p-both-hint" data-en${bi ? '' : ' hidden'}>${F('bothHint')}</p>
+          </div>
+        </section>
         <section class="p-card">
           <h2>${F('client')}</h2>
           <div class="form-grid">
             ${field('clientName', F('clientName'), v.client.name, { full: true })}
+            ${field('clientNameEn', F('clientName'), en.clientName, { full: true, en: true, optional: true })}
             ${select('idType', F('idType'), v.client.idType, Object.keys(t('portal.form.idTypes')).map((k) => [k, t('portal.form.idTypes.' + k)]))}
             ${field('idNumber', F('idNumber'), v.client.idNumber, { ltr: true, inputmode: 'numeric' })}
             ${field('phone', F('phone'), v.client.phone, { ltr: true, type: 'tel', inputmode: 'tel', ph: '05XXXXXXXX' })}
             ${field('email', F('email'), v.client.email, { ltr: true, type: 'email', optional: true, ph: 'name@example.com' })}
             ${field('address', F('address'), v.client.address, { full: true, optional: true })}
+            ${field('addressEn', F('address'), en.address, { full: true, en: true, optional: true })}
           </div>
         </section>
         <section class="p-card">
@@ -607,7 +700,9 @@
           <div class="form-grid">
             ${select('area', F('area'), v.matter.area, areas)}
             ${field('matterTitle', F('matterTitle'), v.matter.title, { ph: F('matterTitlePh') })}
+            ${field('matterTitleEn', F('matterTitle'), en.title, { full: true, en: true, ph: esc(t('portal.form.matterTitlePh', 'en')) })}
             ${field('scope', F('scope'), v.matter.scope, { full: true, textarea: true, rows: 4, ph: F('scopePh') })}
+            ${field('scopeEn', F('scope'), en.scope, { full: true, textarea: true, rows: 4, en: true, ph: esc(t('portal.form.scopePh', 'en')) })}
           </div>
         </section>
         <section class="p-card">
@@ -616,10 +711,8 @@
             ${field('amount', F('amount'), v.fees.amount, { ltr: true, inputmode: 'decimal', ph: '0' })}
             ${select('vat', F('vat'), v.fees.vat, ['excl', 'incl', 'none'].map((k) => [k, t('portal.form.vats.' + k)]))}
             ${select('schedule', F('schedule'), v.fees.schedule, ['full', 'two', 'custom'].map((k) => [k, t('portal.form.schedules.' + k)]))}
-            <div class="field" data-custom-field${v.fees.schedule === 'custom' ? '' : ' hidden'}>
-              <label for="cf-custom">${F('custom')}</label>
-              <input class="input" id="cf-custom" name="custom" type="text" value="${esc(v.fees.custom)}" placeholder="${F('customPh')}">
-            </div>
+            ${field('custom', F('custom'), v.fees.custom, { custom: true, optional: true, ph: F('customPh') })}
+            ${field('customEn', F('custom'), en.custom, { custom: true, en: true, optional: true, ph: esc(t('portal.form.customPh', 'en')) })}
             <p class="p-total field-full" data-fee-total aria-live="polite"></p>
           </div>
         </section>
@@ -627,10 +720,12 @@
           <h2>${F('other')}</h2>
           <div class="form-grid">
             ${select('lawyer', F('lawyer'), v.lawyer, lawyers)}
-            ${select('lang', F('lang'), v.lang, [['ar', t('portal.form.langs.ar')], ['en', t('portal.form.langs.en')]])}
             ${field('duration', F('duration'), v.duration, { optional: true, ph: F('durationDefault') })}
+            ${field('durationEn', F('duration'), en.duration, { en: true, optional: true, ph: esc(t('portal.form.durationDefault', 'en')) })}
             ${field('city', F('city'), v.city, { optional: true, ph: F('cityDefault') })}
+            ${field('cityEn', F('city'), en.city, { en: true, optional: true, ph: esc(t('portal.form.cityDefault', 'en')) })}
             ${field('terms', F('terms'), v.terms, { full: true, textarea: true, rows: 3, optional: true, ph: F('termsPh') })}
+            ${field('termsEn', F('terms'), en.terms, { full: true, textarea: true, rows: 3, en: true, optional: true, ph: esc(t('portal.form.termsPh', 'en')) })}
           </div>
         </section>
         <div class="p-form-actions">
@@ -659,10 +754,17 @@
         if (p) p.hidden = true;
       }
     });
+    const syncFields = () => {
+      const both = val('lang') === 'both', custom = val('schedule') === 'custom';
+      $$('[data-en], [data-custom-field]', form).forEach((el) => {
+        el.hidden = (el.hasAttribute('data-en') && !both) || (el.hasAttribute('data-custom-field') && !custom);
+      });
+    };
     form.addEventListener('change', (e) => {
-      if (e.target.name === 'schedule') $('[data-custom-field]').hidden = e.target.value !== 'custom';
+      if (e.target.name === 'schedule' || e.target.name === 'lang') syncFields();
       showTotal();
     });
+    syncFields();
     showTotal();
     let intent = 'preview';
     $$('[data-intent]', form).forEach((b) => b.addEventListener('click', () => { intent = b.dataset.intent; }));
@@ -675,6 +777,13 @@
       if (val('email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) errors.email = t('portal.form.errors.email');
       const amount = parseFloat(toLatin(val('amount')).replace(/,/g, ''));
       if (val('amount') && !(amount > 0)) errors.amount = t('portal.form.errors.amount');
+      const both = val('lang') === 'both';
+      if (both) {
+        // the English column needs its own text wherever the Arabic has some
+        ['matterTitleEn', 'scopeEn'].forEach((n) => { if (!val(n)) errors[n] = t('portal.form.errors.required'); });
+        [['duration', 'durationEn'], ['city', 'cityEn'], ['terms', 'termsEn']].forEach(([ar, n]) => { if (val(ar) && !val(n)) errors[n] = t('portal.form.errors.englishToo'); });
+        if (val('schedule') === 'custom' && val('custom') && !val('customEn')) errors.customEn = t('portal.form.errors.englishToo');
+      }
       $$('.field-error', form).forEach((p) => { p.hidden = true; });
       $$('[aria-invalid]', form).forEach((el) => el.removeAttribute('aria-invalid'));
       const bad = Object.keys(errors);
@@ -691,7 +800,10 @@
         matter: { area: val('area'), title: val('matterTitle'), scope: val('scope') },
         fees: { amount, vat: val('vat'), schedule: val('schedule'), custom: val('custom') },
         duration: val('duration'), city: val('city'), terms: val('terms'),
+        // English counterparts, in the fixed EN_KEYS order
+        en: both ? { clientName: val('clientNameEn'), address: val('addressEn'), title: val('matterTitleEn'), scope: val('scopeEn'), custom: val('customEn'), duration: val('durationEn'), city: val('cityEn'), terms: val('termsEn') } : undefined,
       });
+      if (!both) delete c.en;
       if (!existing) load().push(c);
       save();
       toast(t('portal.form.saved'));

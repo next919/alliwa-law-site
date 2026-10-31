@@ -2178,7 +2178,21 @@ html[data-theme="dark"] .p-filter[aria-pressed="true"] .p-count { color: var(--c
 .p-form-actions .btn { flex: 1 1 200px; }
 .p-cancel { display: inline-flex; align-items: center; min-height: 44px; padding-inline: .5rem; }
 @media (min-width: 640px) { .p-form-actions .btn { flex: 0 0 auto; } }
-[data-custom-field][hidden] { display: none; }
+[data-custom-field][hidden], .field-en[hidden], .p-both-hint[hidden] { display: none; }
+.lang-tag {
+  display: inline-block;
+  margin-inline-start: .3rem;
+  padding: 0 .4rem;
+  border-radius: 4px;
+  background: var(--paper-200);
+  color: var(--ink-700);
+  font: 700 .68rem/1.65 "Inter", system-ui, sans-serif;
+  letter-spacing: .05em;
+  vertical-align: .1em;
+}
+.field-en .input { text-align: left; }
+.p-lang-card .form-grid { align-items: end; }
+.p-both-hint { margin: 0; font-size: .875rem; }
 
 /* one agreement */
 .p-detail { display: grid; gap: 1.25rem; }
@@ -2327,10 +2341,73 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-party dt::after { content: ":"; }
 .cd-party dd { margin: 0; }
 .cd-preamble { margin: 1.25rem 0 !important; }
-.cd-clauses { counter-reset: clause; }
-.cd-clauses li { margin-bottom: .9rem; counter-increment: clause; }
+.cd-clauses > li { margin-bottom: .9rem; }
 .cd-clauses h4 { margin: 0 0 .15rem; font-size: 1rem; }
-.cd-clauses h4::before { content: counter(clause) ". "; color: #8a96a0; font-family: "Inter", system-ui, sans-serif; }
+/* numbered points inside an article: Arabic-Indic digits in Arabic, 1. 2. 3. in English */
+.cd-items { margin: .15rem 0 .35rem; padding-inline-start: 1.5rem; }
+.cd-items li { margin-bottom: .15rem; padding-inline-start: .2rem; }
+[lang="ar"] .cd-items, .cd-items[lang="ar"] { list-style: arabic-indic; }
+[lang="en"] .cd-items { list-style: decimal; }
+
+/* the firm's emblem as a faint watermark behind the text (also in print) */
+.contract-doc { position: relative; isolation: isolate; }
+.contract-doc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("../images/logo-mark-dark.svg") center 42% / min(42%, 300px) no-repeat;
+  opacity: .05;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* bilingual agreement: English left, Arabic right, each article under a dark heading row */
+.contract-bi .cd-l { display: block; }
+.contract-bi .cd-l[lang="en"] { font-family: "Inter", system-ui, sans-serif; }
+.contract-bi .cd-brand .cd-l[lang="en"], .contract-bi .cd-meta dt .cd-l[lang="en"], .contract-bi .cd-sign .cd-l[lang="en"], .contract-bi .cd-foot .cd-l[lang="en"] { font-size: .9em; }
+.contract-bi .cd-title .cd-l[lang="en"] { margin-top: .1rem; color: var(--doc-muted); font-size: .62em; font-weight: 600; letter-spacing: .03em; }
+.contract-bi .cd-demo .cd-l + .cd-l { margin-top: .1rem; }
+.contract-bi .cd-hijri[lang="en"] { display: block; }
+.cd-bi { width: 100%; margin: 1.25rem 0 1.5rem; border-collapse: collapse; table-layout: fixed; font-size: .88rem; line-height: 1.75; }
+.cd-bi th, .cd-bi td { width: 50%; padding: .7rem .9rem; border: 1px solid var(--doc-line); vertical-align: top; }
+.cd-bi .cd-en { font-family: "Inter", system-ui, sans-serif; text-align: left; }
+.cd-bi .cd-ar { font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; text-align: right; }
+.cd-bi-head th {
+  padding-block: .55rem;
+  border-color: var(--char-700);
+  background: var(--char-700);
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 700;
+  line-height: 1.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.cd-bi-head .cd-en { font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; }
+.cd-bi td p { margin: 0 0 .35rem; }
+.cd-bi td p:last-child { margin-bottom: 0; }
+.cd-bi h3 { margin: 0 0 .2rem; color: var(--doc-muted) !important; font-size: .75rem; font-weight: 600; }
+.cd-bi h3:not(:first-child) { margin-top: .9rem; padding-top: .75rem; border-top: 1px dashed var(--doc-line); }
+.cd-bi dl { display: grid; gap: .1rem; margin: 0; }
+.cd-bi dl div { display: flex; flex-wrap: wrap; gap: 0 .4rem; }
+.cd-bi dt { color: var(--doc-muted); }
+.cd-bi dt::after { content: ":"; }
+.cd-bi dd { margin: 0; }
+.cd-sum div { justify-content: space-between; padding-block: .15rem; border-bottom: 1px dotted var(--doc-line); }
+.cd-sum div:last-child { border-bottom: 0; }
+.cd-sum .cd-total dt, .cd-sum .cd-total dd { color: var(--char-900); font-weight: 700; }
+/* phones: the two columns would be too narrow, so each article shows its Arabic, then its English */
+@media (max-width: 639.98px) {
+  .cd-bi, .cd-bi tbody { display: block; }
+  .cd-bi tr { display: flex; flex-direction: column; }
+  .cd-bi th, .cd-bi td { width: auto; }
+  .cd-bi .cd-ar { order: -1; }
+  .cd-bi td.cd-en { border-top-style: dashed; }
+  .cd-bi-head th.cd-en { padding-top: 0; border-top: 0; }
+  .cd-bi-head th.cd-ar { padding-bottom: .15rem; border-bottom: 0; }
+}
 .cd-fees { width: 100%; margin: 1.25rem 0; border-collapse: collapse; font-size: .9rem; }
 .cd-fees th, .cd-fees td { padding: .55rem .8rem; border: 1px solid var(--doc-line); text-align: start; vertical-align: top; }
 .cd-fees th { width: 42%; background: #f6f8f9; color: var(--doc-muted); font-weight: 600; }
@@ -2444,7 +2521,9 @@ html[data-theme="dark"] .sign-done p { color: #b9e3c9; }
   html.is-printing body { background: #fff; }
   #print-root .contract-doc { max-width: none; padding: 0; border: 0; box-shadow: none; font-size: 10.5pt; }
   #print-root .contract-doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  #print-root .cd-clauses li, #print-root .cd-sign, #print-root .cd-fees { break-inside: avoid; }
+  #print-root .cd-clauses li, #print-root .cd-sign, #print-root .cd-fees, #print-root .cd-bi tr { break-inside: avoid; }
+  #print-root .cd-bi-head { break-after: avoid; }
+  #print-root .cd-bi { font-size: 9pt; }
 }
 
 /* ---------- 17. Touch screens & motion preferences ---------- */
