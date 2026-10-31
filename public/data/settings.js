@@ -58,7 +58,7 @@ window.SITE_SETTINGS = {
   //         a team card shows the person's initial (set under "initial" in ar.js / en.js).
   team: [
     { id: "gm",       group: "partners", photo: "images/team/general-manager.jpg" },
-    { id: "khalid",   group: "partners", photo: "" },
+    { id: "khalid",   group: "partners", photo: "images/team/khalid.jpg" },
     { id: "trainee1", group: "staff",    photo: "" },
     { id: "trainee2", group: "staff",    photo: "" },
     { id: "trainee3", group: "staff",    photo: "" },

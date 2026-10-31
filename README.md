@@ -4,7 +4,7 @@ A bilingual (Arabic RTL / English LTR) one-page website with an employee-login p
 Plain HTML, CSS and JavaScript — no framework, no build step. The `public/` folder is the whole site.
 
 > **Draft status:** the logo, colours, fonts, team names, office photos, phone and email are the firm's own.
-> Still placeholders: the bios, Khalid's photo, licence number, years of experience, working hours and some About text. The site tells search engines not to index it until launch
+> Still placeholders: the bios, licence number, years of experience, working hours and some About text. The site tells search engines not to index it until launch
 > (see *Before launch* below).
 
 ## Folder structure
@@ -79,7 +79,7 @@ to the new domain.
 
 ## Before launch
 
-- [ ] Replace the remaining placeholders: bios, Khalid's photo, licence number, years, hours and the About text marked as temporary
+- [ ] Replace the remaining placeholders: bios, licence number, years, hours and the About text marked as temporary
 - [ ] `showDemoBanner: false` in `data/settings.js`
 - [ ] Remove the `<meta name="robots" content="noindex, nofollow">` line from `index.html` and `login.html`
 - [ ] Remove the `X-Robots-Tag` line from `public/_headers`
