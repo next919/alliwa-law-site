@@ -121,11 +121,12 @@ to the new domain.
   finger or by typing, ticks the consent and enters a code (demo code **1234**) → the client's page offers
   *Send confirmation to the firm* (WhatsApp to the firm's number, or copy) → opening that confirmation link in the
   portal marks the agreement *Signed* with the signature, the time and the history. *Print / save as PDF* gives a
-  clean A4 copy: the agreement number and page numbers at the foot of every page (Chrome / Edge), the emblem and a
-  faint "demo template" notice on every page, and the fees summary kept with the signatures.
+  clean A4 copy: the agreement number and page numbers at the foot of every page (Chrome / Edge), the firm's logo
+  as a faint watermark on every page (`images/watermark.svg`; on screen it repeats down the sheet), a "demo
+  template" notice on every page, and the fees summary kept with the signatures.
 - **Bilingual agreements:** a two-column table, English left and Arabic right, each article under a dark heading
   row ("Article 5: … | البند الخامس: …"), numbered points (1. 2. 3. / ١. ٢. ٣.), a language clause (the Arabic text
-  prevails) and the firm's emblem as a faint watermark. The form marks the main fields AR and adds English fields
+  prevails) and the firm's logo as a faint watermark. The form marks the main fields AR and adds English fields
   (marked EN) for the free text; names, numbers and amounts are entered once. Each text needs its counterpart in
   the other language, and each column must be in its own language, so the two versions always match. Switching a
   draft to English-only and back keeps both texts. When the sheet is narrow (phones), each article shows its

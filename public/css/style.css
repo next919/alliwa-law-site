@@ -2371,15 +2371,16 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-items:lang(ar) { list-style: arabic-indic; }
 .cd-items:lang(en) { list-style: decimal; }
 
-/* the firm's emblem as a faint watermark behind the text (also in print) */
+/* watermark: the firm's logo (emblem + Arabic and English name), faint behind the text. On screen it repeats down
+   the sheet about once a page; in print it sits in the middle of every page. File: images/watermark.svg */
 .contract-doc { position: relative; isolation: isolate; container-type: inline-size; }
 .contract-doc::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: url("../images/logo-mark-dark.svg") center 42% / min(42%, 300px) no-repeat;
-  opacity: .05;
+  background: url("../images/watermark.svg") center top 40px / min(58%, 380px) auto repeat-y;
+  opacity: .07;
   pointer-events: none;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
@@ -2583,22 +2584,8 @@ html[data-theme="dark"] .sign-done p { color: #b9e3c9; }
   #print-root .cd-bi { font-size: 9pt; }
   /* the fees summary and the signatures stay together, so a signature page never stands alone */
   #print-root .cd-close { break-inside: avoid; }
-  /* fixed boxes repeat on every printed page: the emblem, and a faint diagonal "demo template" notice */
-  #print-root .contract-doc::before { position: fixed; inset: 0; background-position: center 45%; background-size: 80mm auto; }
-  #print-root .contract-doc::after {
-    content: attr(data-demo);
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    z-index: -1;
-    width: 150mm;
-    color: rgb(122 79 0 / .1);
-    font: 700 17pt/1.6 "IBM Plex Sans Arabic", "Inter", sans-serif;
-    text-align: center;
-    white-space: pre-line;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    pointer-events: none;
-  }
+  /* a fixed box repeats on every printed page: the logo watermark in the middle of each page */
+  #print-root .contract-doc::before { position: fixed; inset: 0; background-position: center center; background-size: 115mm auto; background-repeat: no-repeat; opacity: .08; }
 }
 
 /* ---------- 17. Touch screens & motion preferences ---------- */

@@ -369,12 +369,11 @@
     return isBi(c) ? renderBilingual(c) : renderSingle(c);
   }
 
-  // data-demo: the "demo template" notice, repeated across every printed page
   function renderSingle(c) {
     const L = c.lang === 'en' ? 'en' : 'ar';
     const d = docParts(c, L), T = d.T;
     return `
-<article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}" data-demo="${esc(T('demoMark'))}">
+<article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">
   <p class="cd-demo">${esc(T('demoMark'))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${esc(T('firmName'))}</span></div>
@@ -418,7 +417,7 @@
       rows += head(E.heading(i, ce.h || ''), A.heading(i, ca.h || '')) + pair(E.body(ce), A.body(ca));
     }
     return `
-<article class="contract-doc contract-bi" lang="ar" dir="rtl" data-demo="${esc(t('contract.demoMark', 'ar') + '\n' + t('contract.demoMark', 'en'))}">
+<article class="contract-doc contract-bi" lang="ar" dir="rtl">
   <p class="cd-demo">${per(LL, (L) => t('contract.demoMark', L))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${per(LL, (L) => t('contract.firmName', L))}</span></div>
@@ -441,10 +440,13 @@
   function printContract(c) {
     let root = $('#print-root');
     if (!root) { root = document.createElement('div'); root.id = 'print-root'; document.body.appendChild(root); }
-    // the foot of every page: agreement number and "page / pages" (browsers that support page margin boxes)
+    // every page, in its margins (browsers that support page margin boxes): the demo notice at the top,
+    // the agreement number and "page / pages" at the foot
     const no = String(c.id).replace(/[^\w-]/g, '');
+    const demo = (isBi(c) ? ['ar', 'en'] : [c.lang === 'en' ? 'en' : 'ar']).map((L) => t('contract.demoMark', L)).join('   ·   ');
     root.innerHTML = renderContract(c)
-      + `<style>@page { @bottom-center { content: "${no}  ·  " counter(page) " / " counter(pages); font: 8pt "Inter", system-ui, sans-serif; color: #5f6b74; } }</style>`;
+      + `<style>@page { @top-center { content: ${JSON.stringify(demo).replace(/</g, '')}; font: 700 8pt "IBM Plex Sans Arabic", "Inter", sans-serif; color: #9a6a00; }`
+      + ` @bottom-center { content: "${no}  ·  " counter(page) " / " counter(pages); font: 8pt "Inter", system-ui, sans-serif; color: #5f6b74; } }</style>`;
     // the page title becomes the suggested file name of the PDF
     const title = document.title;
     document.title = t('contract.title', isBi(c) ? lang() : c.lang === 'en' ? 'en' : 'ar') + ' ' + c.id;
