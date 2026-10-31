@@ -21,7 +21,9 @@
   };
   var params = null;
   try { params = new URLSearchParams(location.search); } catch (e) {}
+  var optionsOn = !(window.SITE_SETTINGS && window.SITE_SETTINGS.displayOptions === false);
   Object.keys(OPTIONS).forEach(function (name) {
+    if (!optionsOn) { try { localStorage.removeItem(OPTIONS[name].key); } catch (e) {} return; }
     var o = OPTIONS[name], value = null;
     var asked = params && params.get(name);
     try {

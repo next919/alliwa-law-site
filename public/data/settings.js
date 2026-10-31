@@ -11,8 +11,13 @@ window.SITE_SETTINGS = {
   // Language for a first visit: "ar" or "en". After that each visitor's own choice is remembered.
   defaultLanguage: "ar",
 
-  // The thin gold strip at the very top that says "demo version". Set to false before launch.
+  // The thin strip at the very top that says "demo version" (it also holds the "Display options" button).
+  // Set to false before launch.
   showDemoBanner: true,
+
+  // The "Display options" panel (light/dark, colour schemes, shapes). false = official look only:
+  // the button is hidden and any choice a visitor saved earlier is cleared.
+  displayOptions: true,
 
   // Official logo (white version, for the dark header and footer): Arabic page / English page.
   // The hero shows the office photo (images/office/hero-office.jpg); the 404 page uses images/logo-mark-dark.svg.

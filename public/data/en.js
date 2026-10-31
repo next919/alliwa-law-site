@@ -78,13 +78,13 @@ window.SITE_TEXT.en = {
 
   // ----- Home -----
   hero: {
-    eyebrow: "Law Firm & Legal Consultancy · Jubail",
+    eyebrow: "Law Firm & Legal Consultancy ·\u00a0Jubail",
     title: "Trusted legal expertise",
     titleAccent: "protecting your rights and your business",
     lead: "We advise and represent individuals and companies under the laws of the Kingdom of Saudi Arabia, with professionalism and strict confidentiality.",
     secondary: "Our Practice Areas",
     points: [
-      "Licensed lawyers",
+      "A licensed legal team",
       "Strict client confidentiality",
       "In-person and remote consultations"
     ],
@@ -94,7 +94,7 @@ window.SITE_TEXT.en = {
   intro: {
     eyebrow: "Welcome",
     title: "Your legal partner in the Eastern Province",
-    text: "Khalid Allewa Lawyers and Consultants is a Saudi law firm based in Jubail, with a dedicated team of lawyers and legal consultants. We work with clarity and transparency, and stay with our clients at every step, from the first consultation to the right resolution.",
+    text: "Khalid Allewa Lawyers and Consultants is a Saudi law firm based in Jubail, with a complete legal team. We work with clarity and transparency, and stay with our clients at every step, from the first consultation to the right resolution.",
     more: "Learn more about us"
   },
 
@@ -172,17 +172,18 @@ window.SITE_TEXT.en = {
 
   // ----- Licences & accreditation (numbers and verify links are in data/settings.js) -----
   licence: {
-    eyebrow: "Trust & Transparency",
+    eyebrow: "Transparency",
     title: "Licences & Accreditation",
     subtitle: "We practise under a Ministry of Justice licence and Saudi Bar Association membership, and you can check our details with the official bodies.",
     pending: "To be added",
+    newTab: "(opens in a new tab)",
     note: "Draft: the numbers are added once the firm confirms them; the verify links open the official websites.",
     items: {
-      moj: { title: "Law Practice Licence", issuer: "Issued by the Ministry of Justice", label: "Licence No.", verify: "Verify in the lawyers directory" },
-      sba: { title: "Saudi Bar Association Membership", issuer: "Active basic membership", label: "Membership No.", verify: "Verify with the SBA" },
-      establishment: { title: "Legal Establishment Record", issuer: "Saudi Bar Association", label: "Record No.", verify: "Verify the establishment" },
-      cr: { title: "Commercial Registration", issuer: "Professional company registered with the Ministry of Commerce", label: "Unified National No.", verify: "" },
-      vat: { title: "VAT Registration", issuer: "Zakat, Tax and Customs Authority (ZATCA)", label: "VAT No.", verify: "Verify with ZATCA" }
+      moj: { title: "Law Practice Licence", issuer: "Issued by the Ministry of Justice", label: "Licence No", verify: "Verify in the lawyers directory" },
+      sba: { title: "Saudi Bar Association Membership", issuer: "Saudi Bar Association", label: "Membership No", verify: "Verify with the SBA" },
+      establishment: { title: "Legal Establishment Record", issuer: "Saudi Bar Association", label: "Record No", verify: "Verify the establishment" },
+      cr: { title: "Commercial Registration", issuer: "Ministry of Commerce", label: "Unified National No", verify: "" },
+      vat: { title: "VAT Registration", issuer: "Zakat, Tax and Customs Authority (ZATCA)", label: "VAT No", verify: "Verify with ZATCA" }
     }
   },
 
@@ -193,7 +194,7 @@ window.SITE_TEXT.en = {
     title: "Practice Areas",
     subtitle: "We provide legal advice, contract drafting and representation before the competent judicial authorities in the following areas.",
     cta: "Request a consultation",
-    note: "We keep all client information strictly confidential and never publish details of cases or clients.",
+    note: "We keep client information strictly confidential: we never publish case details, and show an organisation's name or logo only with its written consent.",
     areas: {
       commercial: {
         title: "Commercial Law",
@@ -227,7 +228,7 @@ window.SITE_TEXT.en = {
       },
       family: {
         title: "Family & Personal Status",
-        text: "We handle family matters with wisdom and complete confidentiality, favoring amicable solutions that protect everyone's interests.",
+        text: "We handle family matters with wisdom and complete confidentiality, favouring amicable solutions that protect everyone's interests.",
         services: [
           "Divorce, khula and annulment",
           "Custody, maintenance and visitation",
@@ -403,8 +404,8 @@ window.SITE_TEXT.en = {
     privacy: {
       title: "Privacy Policy",
       items: [
-        { h: "Who we are", p: "Khalid Allewa Lawyers and Consultants (a professional company), based in Jubail, Saudi Arabia, is responsible for the personal data collected through this website. Questions about your data: info@kalidlaw.com." },
-        { h: "What we collect", p: "Only when you fill in the consultation form: your name, mobile number, email (optional), type of consultation, preferred way of meeting and a short summary of the matter. We do not ask for documents or confidential case details through the website." },
+        { h: "Who we are", p: "Khalid Allewa Lawyers and Consultants ([legal form]), based in Jubail, Saudi Arabia, is responsible for the personal data collected through this website. Questions about your data: info@kalidlaw.com." },
+        { h: "What we collect", p: "Only when you fill in the consultation form: your name, mobile number, email (optional), type of consultation, preferred consultation method and a short summary of the matter. We do not ask for documents or confidential case details through the website." },
         { h: "Purpose and legal basis", p: "We use this data only to answer your request and arrange the consultation, based on the consent you give when you send the form. We do not use it for marketing without your separate consent." },
         { h: "Confidentiality and disclosure", p: "We treat your data in strict confidence under the lawyers' Code of Professional Conduct. We never sell it, and we disclose it only with your explicit consent or where the law requires. The technical providers that host the website or run our email may access it, only as far as their service needs." },
         { h: "How long we keep it", p: "We keep request data only as long as needed for its purpose or as the law requires, then destroy it securely. [The firm sets the period.]" },

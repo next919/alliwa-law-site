@@ -43,8 +43,7 @@
         }
         $('.member-name', card).dataset.i18n = key + '.name';
         $('.member-role', card).dataset.i18n = key + '.role';
-        if (t(key + '.bio')) $('.member-bio', card).dataset.i18n = key + '.bio';
-        else $('.member-bio', card).remove();
+        $('.member-bio', card).dataset.i18n = key + '.bio';  // empty bios are hidden by CSS
         if (group === 'partners') card.classList.add('is-partner');
         card.style.setProperty('--i', i);
         grid.appendChild(card);
@@ -80,6 +79,8 @@
       }
       list.appendChild(li);
     });
+    if (clients.every((c) => !c.logo)) list.setAttribute('aria-hidden', 'true');
+    else list.removeAttribute('aria-hidden');
     const section = list.closest('section');
     if (section) section.hidden = clients.length === 0;
     const note = $('[data-clients-note]');
@@ -110,7 +111,7 @@
       $('.licence-label', card).dataset.i18n = key + '.label';
       fillNumber($('.licence-number', card), it);
       const link = $('.licence-verify', card);
-      if (it.link && t(key + '.verify')) {
+      if (it.link) {
         link.href = it.link;
         $('span', link).dataset.i18n = key + '.verify';
       } else {
@@ -450,9 +451,9 @@
   /* ---------- Display options panel (demo): night mode, colours, shape ---------- */
   // js/boot.js applies the saved choice before the page is drawn; this panel changes it.
   const THEME = {
-    mode:   { attr: 'theme',  key: 'theme-mode',   def: 'light' },
-    accent: { attr: 'accent', key: 'theme-accent', def: 'official' },
-    shape:  { attr: 'shape',  key: 'theme-shape',  def: 'soft' },
+    mode:   { attr: 'theme',  key: 'theme-mode',   def: 'light',    param: 'theme' },
+    accent: { attr: 'accent', key: 'theme-accent', def: 'official', param: 'accent' },
+    shape:  { attr: 'shape',  key: 'theme-shape',  def: 'soft',     param: 'shape' },
   };
 
   // the browser bar colour follows the scheme (phones)
@@ -465,7 +466,9 @@
   function setupThemePanel() {
     const panel = $('[data-theme-panel]');
     const toggle = $('[data-theme-toggle]');
+    const backdrop = $('[data-theme-backdrop]');
     if (!panel || !toggle) return;
+    if (S.displayOptions === false) { toggle.hidden = true; return; }
     const root = document.documentElement;
     const current = (k) => root.getAttribute('data-' + THEME[k].attr) || THEME[k].def;
 
@@ -480,11 +483,23 @@
       if (value === o.def) root.removeAttribute('data-' + o.attr);
       else root.setAttribute('data-' + o.attr, value);
       try { if (value === o.def) localStorage.removeItem(o.key); else localStorage.setItem(o.key, value); } catch (e) { /* not remembered */ }
+      // a ?theme= / ?accent= / ?shape= link would undo the choice on reload, so keep it in step (as the language switch does)
+      try {
+        const url = new URL(location.href);
+        if (url.searchParams.has(o.param)) {
+          if (value === o.def) url.searchParams.delete(o.param); else url.searchParams.set(o.param, value);
+          history.replaceState(history.state, '', url);
+        }
+      } catch (e) { /* opened from a file */ }
       updateThemeColor();
     }
     function open() {
+      // never on top of the open mobile menu
+      const menuToggle = $('[data-menu-toggle]');
+      if (document.body.classList.contains('nav-open') && menuToggle) menuToggle.click();
       sync();
       panel.hidden = false;
+      if (backdrop) backdrop.hidden = false;
       toggle.setAttribute('aria-expanded', 'true');
       const first = $('input:checked', panel);
       if (first) first.focus();
@@ -492,6 +507,7 @@
     function close(returnFocus) {
       if (panel.hidden) return;
       panel.hidden = true;
+      if (backdrop) backdrop.hidden = true;
       toggle.setAttribute('aria-expanded', 'false');
       if (returnFocus) toggle.focus();
     }
@@ -506,9 +522,16 @@
       Object.keys(THEME).forEach((k) => set(k, THEME[k].def));
       sync();
     });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) close(true); });
-    document.addEventListener('pointerdown', (e) => {
-      if (!panel.hidden && !panel.contains(e.target) && !toggle.contains(e.target)) close(false);
+    // Esc closes the panel only (capture phase, so the menu's own Esc handler does not also run)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) { e.stopPropagation(); close(true); }
+    }, true);
+    // a tap beside the panel lands on the backdrop, so it closes the panel without pressing anything underneath
+    if (backdrop) backdrop.addEventListener('click', () => close(true));
+    // keyboard: leaving the panel closes it, so it never hides the focused element
+    panel.addEventListener('focusout', (e) => {
+      const to = e.relatedTarget;
+      if (to && !panel.contains(to) && !toggle.contains(to)) close(false);
     });
   }
 

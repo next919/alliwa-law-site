@@ -12,6 +12,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="/css/style.css">
+  <script>
+    /* follow the display options chosen on the site (night mode, colours, shape); language stays as it is */
+    try {
+      [['theme', 'theme-mode', ['dark']], ['accent', 'theme-accent', ['navy', 'green']], ['shape', 'theme-shape', ['sharp', 'round']]]
+        .forEach(function (o) { var v = localStorage.getItem(o[1]); if (o[2].indexOf(v) > -1) document.documentElement.setAttribute('data-' + o[0], v); });
+    } catch (e) {}
+  </script>
 </head>
 <body class="login-page error-page">
   <main class="login-main">
