@@ -24,6 +24,8 @@ public/                    ← upload / publish this folder
 ├── _headers               Cloudflare Pages security headers
 ├── robots.txt
 ├── favicon.svg
+├── apple-touch-icon.png   Home-screen icon for iPhone/iPad (the emblem on charcoal)
+├── site.webmanifest       Home-screen name ("خالد اللواء") and icons for Android (images/icons/)
 ├── css/style.css          All design (colours and fonts are at the top, in :root)
 ├── js/boot.js             Picks the language and display options before the page is drawn
 ├── js/i18n.js             Language engine (fills in text, switches RTL/LTR)
