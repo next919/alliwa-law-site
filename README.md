@@ -40,7 +40,7 @@ public/                    ← upload / publish this folder
 | Logo | `images/logo-ar.svg` / `logo-en.svg` (white, header and footer), `logo-mark.svg` (silver emblem in the hero), `logo-mark-dark.svg` (404 page), `favicon.svg`. All drawn from the official Arabic_Logos.pdf / English_Logos.pdf. File names are set under `logos` in `data/settings.js` |
 | Live Google map | Google Maps → Share → *Embed a map* → copy only the `src="…"` link into `mapEmbed` in `data/settings.js` |
 | Default language | `defaultLanguage` in `data/settings.js` (`"ar"` or `"en"`) |
-| Colours / fonts | Top of `css/style.css` (`:root`). Brand palette: Charcoal Gray `#36454F`, Brushed Silver `#C0C0C0`, Pure White `#FFFFFF` |
+| Colours / fonts | Top of `css/style.css` (`:root`). Brand palette: Charcoal Gray `#36454F`, Brushed Silver `#C0C0C0`, Pure White `#FFFFFF`. Fonts (chosen by the client): IBM Plex Sans Arabic for Arabic, Inter for English, loaded from Google Fonts in each page `<head>` |
 
 Editing rules for the data files: change only the text inside the quotes `"…"`, and keep every
 comma, bracket and key name. If text needs a double quote inside it, use the Arabic/curly quotes

@@ -13,8 +13,8 @@
   root.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
   // start downloading this language's fonts now, so the text changes font as little as possible after it appears
   try {
-    (lang === 'ar' ? ['700 1em Amiri', '400 1em "IBM Plex Sans Arabic"', '600 1em "IBM Plex Sans Arabic"']
-      : ['700 1em "Cormorant Garamond"', '400 1em Inter', '600 1em Inter'])
+    (lang === 'ar' ? ['700 1em "IBM Plex Sans Arabic"', '400 1em "IBM Plex Sans Arabic"', '600 1em "IBM Plex Sans Arabic"']
+      : ['700 1em Inter', '400 1em Inter', '600 1em Inter'])
       .forEach(function (f) { document.fonts.load(f, lang === 'ar' ? 'عربي' : 'Aa'); });
   } catch (e) {}
 })();
