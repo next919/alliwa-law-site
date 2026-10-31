@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480">
+  <!-- PLACEHOLDER PHOTO: used for any team member whose "photo" is empty in data/settings.js -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efe9dd"/>
+      <stop offset="1" stop-color="#ddd3bf"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="480" fill="url(#bg)"/>
+  <circle cx="200" cy="188" r="74" fill="#c8bb9d"/>
+  <path d="M52 480C52 392 118 324 200 324s148 68 148 156Z" fill="#c8bb9d"/>
+</svg>

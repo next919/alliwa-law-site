@@ -1,0 +1,395 @@
+/* Page behaviour: builds the team and practice-area cards from data/settings.js, fills in the
+   contact links, and runs the menu, scroll effects and the demo contact form.
+   All visible text comes from data/ar.js and data/en.js (through js/i18n.js).
+   Shared by index.html and login.html: every part checks that its elements exist. */
+(function () {
+  'use strict';
+
+  const S = window.SITE_SETTINGS || {};
+  const I18N = window.I18N;
+  const t = (key) => I18N.t(key);
+  const $ = (sel, scope) => (scope || document).querySelector(sel);
+  const $$ = (sel, scope) => Array.from((scope || document).querySelectorAll(sel));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PLACEHOLDER_PHOTO = 'images/team/placeholder.svg';
+
+  /* ---------- Cards and lists built from settings ---------- */
+
+  function buildTeam() {
+    const tpl = $('#tpl-member');
+    if (!tpl) return;
+    $$('[data-team]').forEach((grid) => {
+      const group = grid.dataset.team;
+      const members = (S.team || []).filter((m) => (m.group || 'staff') === group);
+      grid.replaceChildren();
+      members.forEach((m, i) => {
+        const card = tpl.content.firstElementChild.cloneNode(true);
+        const key = 'team.members.' + m.id;
+        const photo = $('.member-photo', card);
+        $('img', card).src = m.photo || PLACEHOLDER_PHOTO;
+        if (!m.photo) {
+          photo.dataset.placeholder = '';
+          photo.dataset.i18nAttr = 'data-label:placeholder.photo';
+        }
+        $('.member-name', card).dataset.i18n = key + '.name';
+        $('.member-role', card).dataset.i18n = key + '.role';
+        $('.member-bio', card).dataset.i18n = key + '.bio';
+        if (group === 'partners') card.classList.add('is-partner');
+        card.style.setProperty('--i', i);
+        grid.appendChild(card);
+      });
+      const wrap = grid.closest('[data-team-group]');
+      if (wrap) wrap.hidden = members.length === 0;
+    });
+  }
+
+  function buildPractice() {
+    const grid = $('[data-practice]');
+    const tpl = $('#tpl-area');
+    if (!grid || !tpl) return;
+    grid.replaceChildren();
+    (S.practiceAreas || []).forEach((area, i) => {
+      const card = tpl.content.firstElementChild.cloneNode(true);
+      const key = 'practice.areas.' + area.id;
+      const title = $('.area-title', card);
+      $('.area-icon use', card).setAttribute('href', '#i-' + (area.icon || 'scale'));
+      title.dataset.i18n = key + '.title';
+      title.id = 'area-' + area.id;
+      $('.area-text', card).dataset.i18n = key + '.text';
+      $('.area-list', card).dataset.list = key + '.services';
+      const link = $('.area-link', card);
+      link.dataset.book = area.id;
+      link.setAttribute('aria-describedby', title.id);
+      card.style.setProperty('--i', i);
+      grid.appendChild(card);
+    });
+  }
+
+  function buildAreaOptions() {
+    const select = $('[data-area-select]');
+    if (!select) return;
+    const keep = select.value;
+    Array.from(select.options).forEach((o) => { if (o.value) o.remove(); });
+    (S.practiceAreas || []).forEach((area) => {
+      const option = document.createElement('option');
+      option.value = area.id;
+      option.dataset.i18n = 'practice.areas.' + area.id + '.title';
+      select.appendChild(option);
+    });
+    const other = document.createElement('option');
+    other.value = 'general';
+    other.dataset.i18n = 'contact.form.areaOther';
+    select.appendChild(other);
+    select.value = keep;
+  }
+
+  /* ---------- Contact details and links from settings ---------- */
+
+  function setLink(a) {
+    switch (a.dataset.link) {
+      case 'phone':
+        a.href = 'tel:' + String(S.phone || '').replace(/[^\d+]/g, '');
+        break;
+      case 'email':
+        a.href = 'mailto:' + (S.email || '');
+        break;
+      case 'whatsapp': {
+        const message = t('contact.whatsappMessage');
+        a.href = 'https://wa.me/' + String(S.whatsapp || '').replace(/\D/g, '') +
+          (message ? '?text=' + encodeURIComponent(message) : '');
+        a.target = '_blank';
+        a.rel = 'noopener';
+        break;
+      }
+      case 'map':
+        a.href = S.mapLink || '#';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        break;
+    }
+  }
+
+  function fillSettings() {
+    $$('[data-setting]').forEach((el) => {
+      const value = S[el.dataset.setting];
+      if (value != null) el.textContent = value;
+    });
+    $$('[data-years]').forEach((el) => { el.textContent = (S.experienceYears || 0) + '+'; });
+    $$('[data-logo]').forEach((img) => { if (S.logo) img.src = S.logo; });
+    $$('[data-link]').forEach(setLink);
+    const banner = $('[data-demo-banner]');
+    if (banner) banner.hidden = !S.showDemoBanner;
+  }
+
+  function setupMap() {
+    const box = $('[data-map]');
+    if (!box || !S.mapEmbed) return;
+    const frame = document.createElement('iframe');
+    frame.src = S.mapEmbed;
+    frame.loading = 'lazy';
+    frame.referrerPolicy = 'no-referrer-when-downgrade';
+    frame.allowFullscreen = true;
+    frame.dataset.i18nAttr = 'title:contact.map.title';
+    box.replaceChildren(frame);
+  }
+
+  /* ---------- Numbers that count up ---------- */
+
+  function setupStats() {
+    const els = $$('[data-stat]');
+    if (!els.length) return;
+    const values = {
+      years: S.experienceYears || 0,
+      team: (S.team || []).length,
+      areas: (S.practiceAreas || []).length,
+    };
+    const suffix = { years: '+' };
+    const show = (el, n) => { el.textContent = n + (suffix[el.dataset.stat] || ''); };
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      els.forEach((el) => show(el, values[el.dataset.stat]));
+      return;
+    }
+    // screen readers get the final number at once; the counting digits are only visual
+    els.forEach((el) => {
+      el.setAttribute('aria-hidden', 'true');
+      const sr = document.createElement('span');
+      sr.className = 'sr-only';
+      sr.textContent = values[el.dataset.stat] + (suffix[el.dataset.stat] || '');
+      el.after(sr);
+      show(el, 0);
+    });
+    const count = (el) => {
+      const target = values[el.dataset.stat];
+      const start = performance.now();
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / 1400);
+        show(el, Math.round(target * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { count(e.target); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.6 });
+    els.forEach((el) => io.observe(el));
+  }
+
+  /* ---------- Scroll-in effect ---------- */
+
+  function setupReveal() {
+    const els = $$('.reveal, .reveal-stagger');
+    if (!els.length) return;
+    if (reduceMotion || !('IntersectionObserver' in window)) return;
+    document.documentElement.classList.add('reveal-ready');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach((el) => io.observe(el));
+  }
+
+  /* ---------- Header: shadow on scroll, mobile menu, current section ---------- */
+
+  const header = $('[data-header]');
+  const nav = $('[data-nav]');
+  const toggle = $('[data-menu-toggle]');
+  const desktop = window.matchMedia('(min-width: 70em)');  // same as the CSS desktop breakpoint
+
+  function setupHeaderShadow() {
+    if (!header) return;
+    const update = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+  }
+
+  // the panel starts right under the header (whose bottom moves with the demo banner and on rotation)
+  const placeNav = () => nav.style.setProperty('--nav-top', Math.max(0, header.getBoundingClientRect().bottom) + 'px');
+
+  function setMenu(open) {
+    if (!nav || !toggle) return;
+    if (open) placeNav();
+    nav.classList.toggle('is-open', open);
+    document.body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.dataset.i18nAttr = 'aria-label:' + (open ? 'nav.close' : 'nav.open');
+    toggle.setAttribute('aria-label', t(open ? 'nav.close' : 'nav.open'));
+    // while the menu covers the page, keep keyboard and screen readers inside the header
+    $$('main, footer, .wa-float, .mobile-bar').forEach((el) => { el.inert = open; });
+  }
+  const menuIsOpen = () => !!nav && nav.classList.contains('is-open');
+
+  function setupMenu() {
+    if (!nav || !toggle) return;
+    toggle.addEventListener('click', () => {
+      const open = !menuIsOpen();
+      setMenu(open);
+      // wait a frame so the panel is visible before focusing into it
+      if (open) setTimeout(() => { const first = $('a', nav); if (first) first.focus(); }, 30);
+    });
+    nav.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menuIsOpen()) { setMenu(false); toggle.focus(); }
+    });
+    desktop.addEventListener('change', (e) => { if (e.matches) setMenu(false); });
+    const keepPlaced = () => { if (menuIsOpen()) placeNav(); };
+    window.addEventListener('resize', keepPlaced, { passive: true });
+    document.addEventListener('langchange', keepPlaced);
+  }
+
+  function setupActiveNav() {
+    const links = $$('.nav-list a[href^="#"]');
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    const byId = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((a) => a.removeAttribute('aria-current'));
+        const link = byId.get(e.target.id);
+        if (link) link.setAttribute('aria-current', 'true');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    byId.forEach((_, id) => { const section = document.getElementById(id); if (section) io.observe(section); });
+  }
+
+  /* ---------- "Book a consultation" buttons ---------- */
+
+  function setupBooking() {
+    document.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-book]');
+      if (!button) return;
+      const select = $('[data-area-select]');
+      if (select && button.dataset.book) {
+        select.value = button.dataset.book;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const title = $('#form-title');
+      if (title) setTimeout(() => title.focus({ preventScroll: true }), reduceMotion ? 0 : 600);
+    });
+  }
+
+  /* ---------- Contact form (demo: checks the fields, sends nothing) ---------- */
+
+  // Arabic-Indic digits (٠١٢…) typed on an Arabic keyboard count as normal digits
+  const toLatinDigits = (s) => s
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+
+  function isPhone(value) {
+    const n = toLatinDigits(value).replace(/[\s\-().]/g, '');
+    return /^(?:(?:\+|00)?966|0)?5\d{8}$/.test(n)   // Saudi mobile: 05XXXXXXXX / +9665XXXXXXXX
+      || /^(?:\+|00)[1-9]\d{7,14}$/.test(n);        // any international number
+  }
+
+  const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  const checks = {
+    name: (el) => el.value.trim().length >= 2 || 'contact.errors.name',
+    phone: (el) => isPhone(el.value) || 'contact.errors.phone',
+    email: (el) => !el.value.trim() || EMAIL.test(el.value.trim()) || 'contact.errors.email',
+    area: (el) => !!el.value || 'contact.errors.area',
+    message: (el) => el.value.trim().length >= 10 || 'contact.errors.message',
+    consent: (el) => el.checked || 'contact.errors.consent',
+  };
+
+  function showError(el, key) {
+    const box = document.getElementById(el.id + '-err');
+    if (key) {
+      el.setAttribute('aria-invalid', 'true');
+      if (box) { box.dataset.i18n = key; box.textContent = t(key); box.hidden = false; }
+    } else {
+      el.removeAttribute('aria-invalid');
+      if (box) { delete box.dataset.i18n; box.textContent = ''; box.hidden = true; }
+    }
+  }
+
+  function validate(el) {
+    const check = checks[el.name];
+    if (!check) return true;
+    const result = check(el);
+    showError(el, result === true ? null : result);
+    return result === true;
+  }
+
+  function setupForm() {
+    const form = $('[data-contact-form]');
+    if (!form) return;
+    const success = $('[data-form-success]', form);
+    const fields = () => Object.keys(checks).map((name) => form.elements.namedItem(name)).filter(Boolean);
+    let tried = false;
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      tried = true;
+      const invalid = fields().filter((el) => !validate(el));
+      if (invalid.length) { invalid[0].focus(); return; }
+      // Demo only — nothing leaves the browser. Phase 2: send the fields to a
+      // Cloudflare Pages Function or a form service (e.g. Formspree, Web3Forms) here.
+      form.reset();
+      fields().forEach((el) => showError(el, null));
+      tried = false;
+      success.hidden = false;
+      success.focus();
+    });
+
+    const recheck = (e) => { if (tried && e.target.name in checks) validate(e.target); };
+    form.addEventListener('input', recheck);
+    form.addEventListener('change', recheck);
+
+    const again = $('[data-form-again]', form);
+    if (again) again.addEventListener('click', () => {
+      success.hidden = true;
+      const first = form.elements.namedItem('name');
+      if (first) first.focus();
+    });
+  }
+
+  /* ---------- Quick-contact bar on phones ---------- */
+
+  function setupMobileBar() {
+    if (!$('[data-mobile-bar]')) return;
+    const heroButtons = $('.hero-cta');
+    // show it once the hero's own buttons have scrolled away, so the two never compete
+    if (heroButtons && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => {
+        document.body.classList.toggle('show-bar', !e.isIntersecting && e.boundingClientRect.top < 0);
+      }).observe(heroButtons);
+    } else {
+      document.body.classList.add('show-bar');
+    }
+    // hide it while typing in the form, so it doesn't sit on top of the phone keyboard
+    const isField = (el) => el.matches && el.matches('input, textarea, select');
+    document.addEventListener('focusin', (e) => { if (isField(e.target)) document.body.classList.add('is-typing'); });
+    document.addEventListener('focusout', (e) => { if (isField(e.target)) document.body.classList.remove('is-typing'); });
+  }
+
+  // login.html: the form is a placeholder until phase 2
+  function setupLoginPlaceholder() {
+    const form = $('[data-login-form]');
+    if (form) form.addEventListener('submit', (e) => e.preventDefault());
+  }
+
+  /* ---------- Start ---------- */
+
+  buildTeam();
+  buildPractice();
+  buildAreaOptions();
+  setupMap();
+  I18N.apply();
+  fillSettings();
+  setupStats();
+  setupReveal();
+  setupHeaderShadow();
+  setupMenu();
+  setupActiveNav();
+  setupBooking();
+  setupForm();
+  setupMobileBar();
+  setupLoginPlaceholder();
+
+  // the WhatsApp greeting is written in the page language
+  document.addEventListener('langchange', () => $$('[data-link="whatsapp"]').forEach(setLink));
+})();

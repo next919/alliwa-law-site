@@ -1,0 +1,6 @@
+# DRAFT: asks search engines not to index the demo.
+# At launch, replace the two lines below with:
+#   User-agent: *
+#   Allow: /
+User-agent: *
+Disallow: /
