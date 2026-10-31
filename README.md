@@ -3,8 +3,8 @@
 A bilingual (Arabic RTL / English LTR) one-page website with an employee-login placeholder.
 Plain HTML, CSS and JavaScript — no framework, no build step. The `public/` folder is the whole site.
 
-> **Draft status:** the logo and colours are the firm's official ones; all names, bios, photos, the email,
-> licence number, years of experience and working hours are placeholders. The site tells search engines not to index it until launch
+> **Draft status:** the logo, colours, fonts, team names, office photos, phone and email are the firm's own.
+> Still placeholders: the bios, Khalid's photo, licence number, years of experience, working hours and some About text. The site tells search engines not to index it until launch
 > (see *Before launch* below).
 
 ## Folder structure
@@ -35,7 +35,8 @@ public/                    ← upload / publish this folder
 | Phone, WhatsApp, email, map link, years of experience | `data/settings.js` |
 | "How we work" steps, FAQ questions, bottom phone bar labels | `process`, `faq`, `mobileBar` in both language files (add or remove items freely) |
 | Team members: add, remove or reorder | `data/settings.js` → `team`, then add the text under `team.members` in both language files with the same `id` |
-| Team photos | Put the photo in `images/team/` and write its path in `data/settings.js` (e.g. `photo: "images/team/khalid.jpg"`). Portrait, about 800×960 px. Empty `""` shows the placeholder |
+| Team photos | Put the photo in `images/team/` and write its path in `data/settings.js` (e.g. `photo: "images/team/khalid.jpg"`). Portrait, about 700×900 px. Empty `""`: a Leadership card shows a placeholder, a team card shows the person's initial (`initial` in the language files) |
+| Office photos | `images/office/`: the About photo and the two photos beside the map are set in `index.html` (search for `images/office/`) |
 | Practice areas | `data/settings.js` → `practiceAreas` (order and icon) + `practice.areas` in both language files |
 | Logo | `images/logo-ar.svg` / `logo-en.svg` (white, header and footer), `logo-mark.svg` (silver emblem in the hero), `logo-mark-dark.svg` (404 page), `favicon.svg`. All drawn from the official Arabic_Logos.pdf / English_Logos.pdf. File names are set under `logos` in `data/settings.js` |
 | Live Google map | Google Maps → Share → *Embed a map* → copy only the `src="…"` link into `mapEmbed` in `data/settings.js` |
@@ -78,7 +79,7 @@ to the new domain.
 
 ## Before launch
 
-- [ ] Replace placeholder text, names, bios, photos, email, licence number, years and hours
+- [ ] Replace the remaining placeholders: bios, Khalid's photo, licence number, years, hours and the About text marked as temporary
 - [ ] `showDemoBanner: false` in `data/settings.js`
 - [ ] Remove the `<meta name="robots" content="noindex, nofollow">` line from `index.html` and `login.html`
 - [ ] Remove the `X-Robots-Tag` line from `public/_headers`

@@ -22,10 +22,10 @@ window.SITE_SETTINGS = {
   },
 
   // ----- Contact -----
-  phone: "+966505516056",          // used when someone taps "call"
-  phoneDisplay: "050 551 6056",    // how the number is shown on the page
-  whatsapp: "966505516056",        // country code + number, digits only (no + or spaces)
-  email: "info@example.com",       // PLACEHOLDER: replace with the firm's real email
+  phone: "+966579797648",          // used when someone taps "call"
+  phoneDisplay: "057 979 7648",    // how the number is shown on the page
+  whatsapp: "966579797648",        // country code + number, digits only (no + or spaces)
+  email: "info@kalidlaw.com",
 
   // ----- Map -----
   // mapLink: where "Open in Google Maps" goes. Best: open the firm on Google Maps → Share → Copy link.
@@ -52,16 +52,16 @@ window.SITE_SETTINGS = {
 
   // ----- Team, in display order -----
   // id    → links to the name, title and bio under team.members in ar.js and en.js
-  // group → "partners" (large cards at the top) or "staff"
-  // photo → picture file, e.g. "images/team/khalid.jpg" (portrait, about 800×960 px).
-  //         Leave "" to show the placeholder silhouette.
+  // group → "partners" (large cards at the top, under "Leadership") or "staff"
+  // photo → picture file in images/team/ (portrait, about 700×900 px).
+  //         Leave "" for no photo: a large card then shows a placeholder,
+  //         a team card shows the person's initial (set under "initial" in ar.js / en.js).
   team: [
-    { id: "partner1",   group: "partners", photo: "" },
-    { id: "partner2",   group: "partners", photo: "" },
-    { id: "lawyer1",    group: "staff",    photo: "" },
-    { id: "lawyer2",    group: "staff",    photo: "" },
-    { id: "consultant", group: "staff",    photo: "" },
-    { id: "researcher", group: "staff",    photo: "" },
-    { id: "manager",    group: "staff",    photo: "" }
+    { id: "gm",       group: "partners", photo: "images/team/general-manager.jpg" },
+    { id: "khalid",   group: "partners", photo: "" },
+    { id: "trainee1", group: "staff",    photo: "" },
+    { id: "trainee2", group: "staff",    photo: "" },
+    { id: "trainee3", group: "staff",    photo: "" },
+    { id: "trainee4", group: "staff",    photo: "" }
   ]
 };

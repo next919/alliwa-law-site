@@ -22,7 +22,7 @@ window.SITE_TEXT.en = {
   },
 
   demo: {
-    banner: "Demo version — text and images are placeholders"
+    banner: "Demo version — some text is still placeholder"
   },
 
   brand: {
@@ -83,6 +83,7 @@ window.SITE_TEXT.en = {
   // ----- About -----
   about: {
     eyebrow: "About the Firm",
+    photoAlt: "One of the offices at Khalid Allewa Lawyers and Consultants, with a view of the sea",
     title: "Professional commitment. Trust earned through work.",
     lead: "The firm was founded to provide comprehensive legal services that combine a deep understanding of Saudi law with hands-on experience before the courts and judicial committees.",
     text: "We believe every client's situation is unique. That is why we study each matter carefully, explain the options in plain language, and build a plan that protects your rights and serves your interests. (Placeholder introduction, to be replaced with the firm's official profile.)",
@@ -110,50 +111,30 @@ window.SITE_TEXT.en = {
     ]
   },
 
-  // ----- Partners & team -----
-  // Each member is linked by its key (partner1, lawyer1 …) to data/settings.js, which sets the photo and order.
+  // ----- Leadership & team -----
+  // Each member is linked by its key (gm, khalid, trainee1 …) to data/settings.js, which sets the photo and order.
   team: {
     eyebrow: "Our People",
-    title: "Partners & Team",
-    subtitle: "Lawyers and legal consultants who combine practical experience with strong academic qualifications.",
-    partnersTitle: "Partners",
+    title: "Leadership & Team",
+    subtitle: "A team that brings together legal and administrative experience, working as one to serve our clients with professionalism and complete discretion.",
+    partnersTitle: "Leadership",
     staffTitle: "Our Team",
     members: {
-      partner1: {
-        name: "Founding Partner Name",
-        role: "Founding & Managing Partner",
-        bio: "Over 15 years of experience in litigation and legal advice for companies and individuals; oversees the work of every department."
+      gm: {
+        name: "Abdulhadi bin Mohammed Allewa",
+        role: "General Manager",
+        bio: "Oversees the running of the firm and its day-to-day work, and follows up on the quality of service our clients receive."
       },
-      partner2: {
-        name: "Partner Name",
-        role: "Partner, Head of Litigation",
-        bio: "Focuses on commercial and labor disputes, representing clients before the courts and judicial committees."
-      },
-      lawyer1: {
-        name: "Senior Lawyer Name",
-        role: "Senior Lawyer",
-        bio: "Handles real estate and enforcement matters, and advises on drafting and reviewing contracts."
-      },
-      lawyer2: {
-        name: "Lawyer Name",
+      khalid: {
+        name: "Khalid bin Abdulhadi Allewa",
         role: "Lawyer",
-        bio: "Works on family and personal status matters, with a focus on amicable settlement and reconciliation."
+        bio: "Represents clients before the courts and judicial committees, and gives legal advice to individuals and companies."
       },
-      consultant: {
-        name: "Consultant Name",
-        role: "Legal Consultant",
-        bio: "Advises on corporate law, governance and commercial arbitration procedure."
-      },
-      researcher: {
-        name: "Researcher Name",
-        role: "Legal Researcher",
-        bio: "Prepares legal memoranda and research, and follows new regulations and court practice."
-      },
-      manager: {
-        name: "Office Manager Name",
-        role: "Office & Client Relations Manager",
-        bio: "Manages appointments, client communication and administrative follow-up."
-      }
+      // initial: the letter shown in the circle instead of a photo
+      trainee1: { name: "Ali bin Mohammed Al-Marri", role: "Trainee Lawyer", initial: "A", bio: "" },
+      trainee2: { name: "Thamer bin Hamad Al-Dosari", role: "Trainee Lawyer", initial: "T", bio: "" },
+      trainee3: { name: "Noura Ibrahim Al-Hamad", role: "Trainee Lawyer", initial: "N", bio: "" },
+      trainee4: { name: "Zainab Al-Ramadan", role: "Trainee Lawyer", initial: "Z", bio: "" }
     }
   },
 
@@ -317,6 +298,13 @@ window.SITE_TEXT.en = {
     ],
     hoursNote: "Working hours are placeholders and will be confirmed.",
     whatsappMessage: "Hello, I would like to ask about the services of Khalid Allewa Lawyers and Consultants.",
+    // office photos next to the map
+    office: {
+      entrance: "Our entrance",
+      entranceAlt: "Entrance of Khalid Allewa Lawyers and Consultants, with the office sign, number 611",
+      interior: "Inside the office",
+      interiorAlt: "Inside the offices of Khalid Allewa Lawyers and Consultants"
+    },
     map: {
       title: "Our Location",
       placeholder: "Placeholder map. An interactive map will be added later.",
@@ -347,8 +335,7 @@ window.SITE_TEXT.en = {
   },
 
   placeholder: {
-    photo: "Placeholder photo",
-    officePhoto: "Office photo (placeholder)"
+    photo: "Placeholder photo"
   },
 
   // ----- Employee login page (phase 2) -----

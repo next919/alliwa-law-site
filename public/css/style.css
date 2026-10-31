@@ -298,24 +298,6 @@ html[lang="en"] .hero-badge-num,
 html[lang="en"] .exp-badge strong,
 html[lang="en"] .value-card::before { letter-spacing: -.03em; }
 
-/* placeholder images: striped box with a label — replace with real photos */
-.ph {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .75rem;
-  padding: 1.5rem;
-  border: 1.5px dashed #b6bec4;
-  border-radius: var(--radius-lg);
-  background: repeating-linear-gradient(135deg, #e7eaed 0 14px, #f1f3f5 14px 28px);
-  color: var(--ink-500);
-  text-align: center;
-  font-size: .925rem;
-  font-weight: 600;
-}
-.ph .icon { width: 2.75rem; height: 2.75rem; color: var(--silver-700); stroke-width: 1.4; }
-
 /* scroll-in effect (only when JS has started; turned off for reduced motion) */
 .reveal-ready .reveal { opacity: 0; translate: 0 18px; transition: opacity .8s var(--ease), translate .8s var(--ease); }
 .reveal-ready .reveal.in { opacity: 1; translate: none; }
@@ -680,7 +662,16 @@ html[lang="ar"] .hero-title { font-size: clamp(1.95rem, 1.25rem + 3.3vw, 3.5rem)
 .about { background: var(--paper-100); }
 .about-grid { display: grid; gap: 3.5rem; align-items: center; }
 .about-media { position: relative; margin-bottom: 1.5rem; }
-.ph-photo { aspect-ratio: 4 / 3; }
+/* office photo: wide on phones (desk and sea in frame), tall beside the text on desktop */
+.about-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 64%;
+  border-radius: var(--radius-lg);
+  background: var(--paper-200);
+  box-shadow: var(--shadow);
+}
 .exp-badge {
   position: absolute;
   bottom: -1.75rem;
@@ -786,7 +777,7 @@ html[lang="ar"] .hero-title { font-size: clamp(1.95rem, 1.25rem + 3.3vw, 3.5rem)
 @media (min-width: 960px) {
   .about-grid { grid-template-columns: .9fr 1.1fr; gap: 4.5rem; }
   .about-media { margin-bottom: 0; }
-  .ph-photo { aspect-ratio: 4 / 5; }
+  .about-photo { aspect-ratio: 4 / 5; object-position: center; }
   .exp-badge { inset-inline-end: -1.5rem; bottom: 2.5rem; }
 }
 @media (min-width: 1080px) {
@@ -844,6 +835,28 @@ html[lang="ar"] .hero-title { font-size: clamp(1.95rem, 1.25rem + 3.3vw, 3.5rem)
 .member-role { margin-bottom: .75rem; color: var(--silver-700); font-weight: 600; font-size: .925rem; }
 .member-bio { color: var(--ink-500); font-size: .95rem; }
 
+/* team cards without a photo: the person's initial in a circle, name and title beside it */
+.member-card.no-photo { flex-direction: row; align-items: center; border-inline-start: 3px solid var(--silver-600); }
+.member-initial {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-inline-start: 1.25rem;
+  border-radius: 50%;
+  background: var(--char-900);
+  color: var(--silver-400);
+  font-family: var(--font-head);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+html[lang="ar"] .member-initial { padding-bottom: .15em; }  /* Arabic letters sit low in their box */
+.no-photo .member-body { padding: 1.15rem 1.25rem; border-top: 0; }
+.no-photo .member-name { font-size: 1.15rem; }
+.no-photo .member-role { margin-bottom: 0; }
+
 @media (min-width: 560px) {
   .team-grid > * { flex-basis: calc(50% - .75rem); max-width: calc(50% - .75rem); }
 }
@@ -851,6 +864,7 @@ html[lang="ar"] .hero-title { font-size: clamp(1.95rem, 1.25rem + 3.3vw, 3.5rem)
   .team-grid > * { flex-basis: calc(33.333% - 1rem); max-width: calc(33.333% - 1rem); }
   .team-grid-partners > * { flex-basis: calc(50% - .75rem); max-width: calc(50% - .75rem); }
   .is-partner .member-photo { aspect-ratio: 4 / 3; }
+  .team-grid > .no-photo { flex-basis: calc(50% - .75rem); max-width: calc(50% - .75rem); }  /* 2 × 2 until there is room for 4 */
 }
 @media (min-width: 70em) {
   .member-card.is-partner { flex-direction: row; }
@@ -864,6 +878,7 @@ html[lang="ar"] .hero-title { font-size: clamp(1.95rem, 1.25rem + 3.3vw, 3.5rem)
     border-inline-start: 3px solid var(--silver-600);
   }
   .is-partner .member-name { font-size: 1.6rem; }
+  .team-grid > .no-photo { flex-basis: calc(25% - 1.125rem); max-width: calc(25% - 1.125rem); }
 }
 
 /* ---------- 10. Practice areas ---------- */
@@ -1202,9 +1217,43 @@ p.info-value { font-size: 1rem; font-weight: 500; }
 .hours-list li span:last-child { color: var(--ink-700); }
 .hours-note { margin: .5rem 0 0; color: var(--ink-500); font-size: .8rem; }
 
+/* location: the map card, then the entrance and the inside of the office */
+.location {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+.location .map-box { grid-column: 1 / -1; }
+.office-photo {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-lg);
+  background: var(--paper-200);
+}
+.office-photo img { width: 100%; height: 100%; object-fit: cover; }
+.office-photo-entrance img { object-position: 30% center; }  /* keep the sign in view */
+.office-photo figcaption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 2.5rem 1rem .85rem;
+  background: linear-gradient(to bottom, transparent, rgb(28 36 41 / .82));
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+@media (min-width: 960px) {
+  .location { grid-template-columns: 2fr 1fr 1fr; gap: 1.25rem; }
+  .location .map-box { grid-column: auto; }
+  .office-photo { aspect-ratio: auto; min-height: 360px; }
+}
+
 .map-box {
   position: relative;
-  margin-top: 1.75rem;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);

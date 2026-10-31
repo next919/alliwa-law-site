@@ -26,14 +26,25 @@
         const card = tpl.content.firstElementChild.cloneNode(true);
         const key = 'team.members.' + m.id;
         const photo = $('.member-photo', card);
-        $('img', card).src = m.photo || PLACEHOLDER_PHOTO;
-        if (!m.photo) {
+        if (m.photo) {
+          $('img', card).src = m.photo;
+        } else if (group === 'staff') {
+          // no photo on a team card: a circle with the person's initial instead of a silhouette
+          const initial = document.createElement('span');
+          initial.className = 'member-initial';
+          initial.setAttribute('aria-hidden', 'true');
+          initial.dataset.i18n = key + '.initial';
+          photo.replaceWith(initial);
+          card.classList.add('no-photo');
+        } else {
+          $('img', card).src = PLACEHOLDER_PHOTO;
           photo.dataset.placeholder = '';
           photo.dataset.i18nAttr = 'data-label:placeholder.photo';
         }
         $('.member-name', card).dataset.i18n = key + '.name';
         $('.member-role', card).dataset.i18n = key + '.role';
-        $('.member-bio', card).dataset.i18n = key + '.bio';
+        if (t(key + '.bio')) $('.member-bio', card).dataset.i18n = key + '.bio';
+        else $('.member-bio', card).remove();
         if (group === 'partners') card.classList.add('is-partner');
         card.style.setProperty('--i', i);
         grid.appendChild(card);
