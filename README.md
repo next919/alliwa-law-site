@@ -17,7 +17,9 @@ Plain HTML, CSS and JavaScript — no framework, no build step. The `public/` fo
 public/                    ← upload / publish this folder
 ├── index.html             Home · About · Team · Practice areas · How we work · Clients · Licences · FAQ · Contact
 ├── legal.html             Privacy policy · Terms of use · Disclaimer (draft, bilingual)
-├── login.html             Employee login placeholder (phase 2)
+├── login.html             Employee sign-in (demo account)
+├── portal.html            Employee portal (demo): overview, e-contracts, users & permissions
+├── sign.html              The client's page for reading and e-signing a fee agreement (demo)
 ├── 404.html               "Page not found"
 ├── _headers               Cloudflare Pages security headers
 ├── robots.txt
@@ -26,9 +28,12 @@ public/                    ← upload / publish this folder
 ├── js/boot.js             Picks the language and display options before the page is drawn
 ├── js/i18n.js             Language engine (fills in text, switches RTL/LTR)
 ├── js/main.js             Menu, cards, stats, scroll effects, demo contact form
+├── js/portal.js           Demo sign-in, portal, fee agreements, e-signature, print copy
 ├── data/settings.js       Phone, WhatsApp, email, map, years, team, licence numbers, client logos
 ├── data/ar.js             ALL Arabic text
 ├── data/en.js             ALL English text
+├── data/portal-ar.js      Portal and agreement text, Arabic (loaded on the portal pages only)
+├── data/portal-en.js      Portal and agreement text, English
 └── images/                Official logo (SVG), team photos, background pattern, link-preview image
 ```
 
@@ -96,6 +101,27 @@ One-time setup in the Cloudflare dashboard:
 domain and follow the DNS step Cloudflare shows. Then update the `og:image` address in `public/index.html`
 to the new domain.
 
+## Employee portal & e-contracts (demo)
+
+`login.html` → `portal.html`. **Demo account:** `info@kalidlaw.com` / `Allewa@2026`.
+
+- **E-contracts:** create a fee agreement (client, matter, fees with or without 15% VAT, payment, lawyer,
+  Arabic or English) → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
+  → a signing link for the client (copy, WhatsApp, email) → on `sign.html` the client reads it, signs with a
+  finger or by typing, ticks the consent and enters a code (demo code **1234**) → the agreement shows as
+  *Signed* with the signature, the time and the history. *Print / save as PDF* gives a clean A4 copy.
+- **Permissions:** "View as" switches between Administrator, Lawyer, Trainee lawyer and Admin staff to show
+  how the menu and actions change (trainees do not see contracts; admin staff can only view them). The
+  matrix is on *Users & permissions*, which also has *Reset demo data*.
+- **Cases, appointments, clients, documents, invoices** are marked *Soon* with the planned features.
+- The agreement text is under `contract` in `data/portal-ar.js` / `data/portal-en.js`: a draft for the firm
+  to review. Every copy is marked "demo template — not valid for use".
+
+**This is a front-end demo, not a secure system:** the account is checked in the browser and all data stays
+in that browser (localStorage), so the client must open a signing link on the same device. Phase 2 needs a
+backend: personal accounts with permissions checked on the server, an encrypted database, sending the link
+and code by SMS/email, an approved e-signature or Nafath identity check, server-made PDFs and an audit log.
+
 ## Before launch
 
 - [ ] Confirm the legal form: "شركة" (professional company) or "مكتب" (office), and adjust the wording
@@ -105,7 +131,7 @@ to the new domain.
 - [ ] Replace the remaining placeholders: bios, years, hours and the About text marked as temporary
 - [ ] Choose the final display option (or keep official) and decide whether to keep the panel
 - [ ] `showDemoBanner: false` in `data/settings.js`
-- [ ] Remove the `<meta name="robots" content="noindex, nofollow">` line from `index.html`, `legal.html` and `login.html`
+- [ ] Remove the `<meta name="robots" content="noindex, nofollow">` line from `index.html` and `legal.html` (keep it on the portal pages)
 - [ ] Remove the `X-Robots-Tag` line from `public/_headers`
 - [ ] In `public/robots.txt`, change `Disallow: /` to `Allow: /`
 - [ ] Connect the contact form (phase 2)
@@ -115,5 +141,6 @@ to the new domain.
 - **Contact form:** currently checks the fields and shows a "demo" message; nothing is sent.
   It can be connected to a Cloudflare Pages Function (email via Cloudflare Email Routing) or a
   form service such as Formspree or Web3Forms — see `setupForm()` in `js/main.js`.
-- **Employee login:** `login.html` is a disabled placeholder. A real portal needs a backend
-  (e.g. Cloudflare Access for staff sign-in, or Pages Functions with a database).
+- **Employee portal:** `portal.html` is a working front-end demo (see above). The real portal needs a backend
+  (e.g. Cloudflare Access or proper accounts for staff sign-in, Pages Functions with a database such as D1,
+  SMS/email delivery of the signing link and code, and an approved e-signature / Nafath identity check).

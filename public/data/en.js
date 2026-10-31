@@ -444,8 +444,11 @@ window.SITE_TEXT.en = {
   login: {
     title: "Employee Portal",
     subtitle: "This page is for the firm's staff only.",
-    notice: "Under development: sign-in will be enabled in phase 2 of the project.",
-    user: "Username or email",
+    notice: "Demo: sign in with the demo account. The data is made up and stays in your browser only.",
+    user: "Email",
+    show: "Show",
+    hide: "Hide",
+    error: "Incorrect email or password.",
     password: "Password",
     submit: "Sign In",
     back: "Back to website"

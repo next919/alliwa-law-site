@@ -535,11 +535,6 @@
     });
   }
 
-  function setupLoginPlaceholder() {
-    const form = $('[data-login-form]');
-    if (form) form.addEventListener('submit', (e) => e.preventDefault());
-  }
-
   /* ---------- Start ---------- */
 
   buildTeam();
@@ -560,7 +555,6 @@
   setupMobileBar();
   setupThemePanel();
   updateThemeColor();
-  setupLoginPlaceholder();
 
   // the WhatsApp greeting is written in the page language
   document.addEventListener('langchange', () => $$('[data-link="whatsapp"]').forEach(setLink));

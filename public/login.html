@@ -15,7 +15,7 @@
   <script src="data/settings.js"></script>
   <script src="js/boot.js"></script>
 </head>
-<!-- Employee login: PLACEHOLDER ONLY. The real sign-in comes in phase 2. -->
+<!-- Employee sign-in: DEMO. The demo account is checked in js/portal.js (no server). The real sign-in comes in phase 2. -->
 <body class="login-page" data-page="login">
 
 <svg class="sprite" aria-hidden="true" focusable="false">
@@ -97,16 +97,20 @@
     <p class="login-sub" data-i18n="login.subtitle"></p>
     <p class="login-notice"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="login.notice"></span></p>
 
-    <form class="login-form" data-login-form>
-      <fieldset disabled>
+    <form class="login-form" data-login-form novalidate>
+      <fieldset>
         <div class="field">
           <label for="l-user" data-i18n="login.user"></label>
-          <input class="input input-ltr" id="l-user" name="username" type="text" dir="ltr" autocomplete="username">
+          <input class="input input-ltr" id="l-user" name="username" type="email" dir="ltr" autocomplete="username" required aria-describedby="l-error">
         </div>
         <div class="field">
           <label for="l-pass" data-i18n="login.password"></label>
-          <input class="input input-ltr" id="l-pass" name="password" type="password" dir="ltr" autocomplete="current-password">
+          <div class="pass-wrap">
+            <input class="input input-ltr" id="l-pass" name="password" type="password" dir="ltr" autocomplete="current-password" required aria-describedby="l-error">
+            <button class="pass-toggle" type="button" data-show-pass aria-pressed="false" aria-controls="l-pass"><span data-i18n="login.show"></span></button>
+          </div>
         </div>
+        <p class="field-error login-error" id="l-error" data-login-error role="alert" hidden></p>
         <button class="btn btn-primary btn-lg btn-block" type="submit"><span data-i18n="login.submit"></span></button>
       </fieldset>
     </form>
@@ -121,7 +125,10 @@
 
 <script src="data/ar.js" defer></script>
 <script src="data/en.js" defer></script>
+<script src="data/portal-ar.js" defer></script>
+<script src="data/portal-en.js" defer></script>
 <script src="js/i18n.js" defer></script>
 <script src="js/main.js" defer></script>
+<script src="js/portal.js" defer></script>
 </body>
 </html>
