@@ -14,6 +14,10 @@ window.SITE_TEXT.en = {
     login: {
       title: "Employee Login | Khalid Allewa Lawyers and Consultants",
       description: "Staff portal of Khalid Allewa Lawyers and Consultants."
+    },
+    legal: {
+      title: "Policies & Terms | Khalid Allewa Lawyers and Consultants",
+      description: "Privacy policy, terms of use and disclaimer for the Khalid Allewa Lawyers and Consultants website."
     }
   },
 
@@ -23,6 +27,26 @@ window.SITE_TEXT.en = {
 
   demo: {
     banner: "Demo version — some text is still placeholder"
+  },
+
+  // "Display options" button in the top strip (preview)
+  theme: {
+    button: "Display options",
+    title: "Display options",
+    close: "Close",
+    mode: "Mode",
+    light: "Light",
+    dark: "Dark",
+    colors: "Colours",
+    official: "Official",
+    navy: "Navy & gold",
+    green: "Green & bronze",
+    shape: "Shape",
+    soft: "Soft",
+    sharp: "Sharp",
+    round: "Round",
+    note: "Preview only: try the options, and the one you pick becomes the final look.",
+    reset: "Back to the official look"
   },
 
   brand: {
@@ -135,6 +159,30 @@ window.SITE_TEXT.en = {
       trainee2: { name: "Thamer bin Hamad Al-Dosari", role: "Trainee Lawyer", initial: "T", bio: "" },
       trainee3: { name: "Noura Ibrahim Al-Hamad", role: "Trainee Lawyer", initial: "N", bio: "" },
       trainee4: { name: "Zainab Al-Ramadan", role: "Trainee Lawyer", initial: "Z", bio: "" }
+    }
+  },
+
+  // ----- Partners & clients (the logos are in data/settings.js) -----
+  clients: {
+    eyebrow: "Trusted by",
+    title: "Our Partners & Clients",
+    subtitle: "Organisations and companies whose trust and cooperation we value.",
+    note: "The logos shown are placeholders. An organisation's logo is shown only with its written consent, in line with professional confidentiality."
+  },
+
+  // ----- Licences & accreditation (numbers and verify links are in data/settings.js) -----
+  licence: {
+    eyebrow: "Trust & Transparency",
+    title: "Licences & Accreditation",
+    subtitle: "We practise under a Ministry of Justice licence and Saudi Bar Association membership, and you can check our details with the official bodies.",
+    pending: "To be added",
+    note: "Draft: the numbers are added once the firm confirms them; the verify links open the official websites.",
+    items: {
+      moj: { title: "Law Practice Licence", issuer: "Issued by the Ministry of Justice", label: "Licence No.", verify: "Verify in the lawyers directory" },
+      sba: { title: "Saudi Bar Association Membership", issuer: "Active basic membership", label: "Membership No.", verify: "Verify with the SBA" },
+      establishment: { title: "Legal Establishment Record", issuer: "Saudi Bar Association", label: "Record No.", verify: "Verify the establishment" },
+      cr: { title: "Commercial Registration", issuer: "Professional company registered with the Ministry of Commerce", label: "Unified National No.", verify: "" },
+      vat: { title: "VAT Registration", issuer: "Zakat, Tax and Customs Authority (ZATCA)", label: "VAT No.", verify: "Verify with ZATCA" }
     }
   },
 
@@ -267,7 +315,9 @@ window.SITE_TEXT.en = {
       },
       message: "Brief details",
       messagePh: "Briefly describe your matter. Please don't include confidential information.",
-      consent: "I agree that my details may be used to contact me about my request, in line with the Personal Data Protection Law.",
+      consent: "I agree to my data being collected and processed under the Privacy Policy, to answer my request and book the appointment.",
+      privacyNote: "Please do not send confidential details or documents through this form.",
+      privacyLink: "Privacy Policy",
       submit: "Send Request",
       note: "Demo form: no data is sent in this version.",
       successTitle: "Request received",
@@ -317,7 +367,10 @@ window.SITE_TEXT.en = {
     linksTitle: "Quick Links",
     contactTitle: "Contact",
     hoursTitle: "Working Hours",
-    license: "License No.: 000000 (placeholder)",
+    legalForm: "Professional company",
+    licenceLabel: "Ministry of Justice licence",
+    crLabel: "Unified National No.",
+    legal: { privacy: "Privacy Policy", terms: "Terms of Use", disclaimer: "Disclaimer" },
     disclaimer: "The information on this website is for general purposes only and does not constitute legal advice.",
     copyright: "© {year} Khalid Allewa Lawyers and Consultants. All rights reserved."
   },
@@ -336,6 +389,54 @@ window.SITE_TEXT.en = {
 
   placeholder: {
     photo: "Placeholder photo"
+  },
+
+  // ----- Privacy, terms and disclaimer page (legal.html) -----
+  // A draft based on the Personal Data Protection Law and the lawyers' Code of Professional Conduct;
+  // the firm reviews and approves it before launch. Text in [ ] is to be completed by the firm.
+  legalPage: {
+    title: "Policies & Terms",
+    back: "Back to the website",
+    toc: "On this page",
+    draft: "Draft: the firm reviews and approves these texts before launch; text in [ ] is completed by the firm.",
+    updated: "Last updated: [date]",
+    privacy: {
+      title: "Privacy Policy",
+      items: [
+        { h: "Who we are", p: "Khalid Allewa Lawyers and Consultants (a professional company), based in Jubail, Saudi Arabia, is responsible for the personal data collected through this website. Questions about your data: info@kalidlaw.com." },
+        { h: "What we collect", p: "Only when you fill in the consultation form: your name, mobile number, email (optional), type of consultation, preferred way of meeting and a short summary of the matter. We do not ask for documents or confidential case details through the website." },
+        { h: "Purpose and legal basis", p: "We use this data only to answer your request and arrange the consultation, based on the consent you give when you send the form. We do not use it for marketing without your separate consent." },
+        { h: "Confidentiality and disclosure", p: "We treat your data in strict confidence under the lawyers' Code of Professional Conduct. We never sell it, and we disclose it only with your explicit consent or where the law requires. The technical providers that host the website or run our email may access it, only as far as their service needs." },
+        { h: "How long we keep it", p: "We keep request data only as long as needed for its purpose or as the law requires, then destroy it securely. [The firm sets the period.]" },
+        { h: "Your rights", p: "Under the Personal Data Protection Law you may: know how your data is processed, access it and get a copy, ask for it to be corrected or completed, ask for it to be destroyed once it is no longer needed, and withdraw your consent at any time. To use these rights, email info@kalidlaw.com." },
+        { h: "Transfers outside Saudi Arabia", p: "[The firm states where the website and email are hosted. If outside the Kingdom, the safeguards used under the law and its regulation on transferring personal data abroad are described here.]" },
+        { h: "Browser storage and outside services", p: "The website uses no tracking or advertising cookies. Your browser keeps only your preferences (language and display options) on your device for your next visit. Fonts are loaded from Google Fonts." },
+        { h: "Questions and complaints", p: "If you have a concern about how your data is handled, contact us first. You may also complain to the competent authority, the Saudi Data & AI Authority (SDAIA)." },
+        { h: "Changes", p: "We may update this policy from time to time; the date of the latest update is shown at the top of the page." }
+      ]
+    },
+    terms: {
+      title: "Terms of Use",
+      items: [
+        { h: "Acceptance", p: "By using this website you accept these terms. If you do not accept them, please do not use the website." },
+        { h: "Nature of the content", p: "The content introduces the firm and its services and gives general information; it is not legal advice on any particular case." },
+        { h: "When a lawyer-client relationship begins", p: "Visiting the website, writing to us or filling in the form does not create a lawyer-client relationship. It begins only once a written fee agreement or power of attorney is signed, as the law provides." },
+        { h: "Appointments and fees", p: "A consultation request made through the website binds neither side until we confirm the appointment, and fees are agreed in writing before any work starts." },
+        { h: "Intellectual property", p: "The website content and the firm's logo belong to the firm and may not be copied, republished or used commercially without written permission." },
+        { h: "External links", p: "The website may link to official or outside websites for verification or information; we are not responsible for their content or policies." },
+        { h: "Governing law", p: "These terms are governed by the laws of the Kingdom of Saudi Arabia, and the Saudi courts have jurisdiction over any dispute arising from them." },
+        { h: "Changes", p: "The firm may change these terms at any time; the version published on the website applies." }
+      ]
+    },
+    disclaimer: {
+      title: "Disclaimer",
+      items: [
+        { h: "General information", p: "The information on this website is general and for awareness only. It is not legal advice and does not replace consulting a licensed lawyer about your own situation." },
+        { h: "Accuracy", p: "We work to keep the content accurate and up to date, but laws change, so we cannot guarantee it is complete or reflects the latest amendments at all times." },
+        { h: "Outcomes", p: "Every case is different, no outcome can be guaranteed, and past results do not guarantee similar results." },
+        { h: "Limits of responsibility", p: "The firm is not responsible for any decision made on the basis of the website content without specific legal advice." }
+      ]
+    }
   },
 
   // ----- Employee login page (phase 2) -----

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title data-i18n="meta.legal.title">السياسات والشروط</title>
+  <meta name="description" content="" data-i18n-attr="content:meta.legal.description">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#36454f">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="data/settings.js"></script>
+  <script src="js/boot.js"></script>
+</head>
+<!-- Privacy policy, terms of use and disclaimer: a DRAFT for the firm to review and approve before launch.
+     The text is in data/ar.js and data/en.js under legalPage. -->
+<body class="legal-page" data-page="legal">
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main" data-i18n="a11y.skip"></a>
+
+<div class="demo-banner" data-demo-banner hidden><span data-i18n="demo.banner"></span></div>
+
+<header class="site-header" data-header>
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <img class="brand-lockup" src="images/logo-ar.svg" alt="" width="171" height="40" data-logo="ar" data-i18n-attr="alt:brand.fullName">
+      <img class="brand-lockup" src="images/logo-en.svg" alt="" width="171" height="40" data-logo="en" data-i18n-attr="alt:brand.fullName">
+    </a>
+    <div class="header-actions">
+      <button class="lang-switch" type="button" data-lang-switch>
+        <svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg>
+        <span class="lang-full" data-i18n="header.langSwitch" data-i18n-attr="lang:header.langCode"></span>
+        <span class="lang-short" data-i18n="header.langShort" data-i18n-attr="lang:header.langCode"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="legal-main">
+  <div class="container legal-inner">
+    <a class="link-arrow legal-back" href="index.html">
+      <svg class="icon icon-back" aria-hidden="true"><use href="#i-arrow"/></svg><span data-i18n="legalPage.back"></span>
+    </a>
+    <h1 class="legal-title" data-i18n="legalPage.title"></h1>
+    <p class="legal-draft"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="legalPage.draft"></span></p>
+    <p class="legal-updated" data-i18n="legalPage.updated"></p>
+    <nav class="legal-toc" aria-labelledby="legal-toc-title">
+      <h2 class="sr-only" id="legal-toc-title" data-i18n="legalPage.toc"></h2>
+      <ul>
+        <li><a href="#privacy" data-i18n="legalPage.privacy.title"></a></li>
+        <li><a href="#terms" data-i18n="legalPage.terms.title"></a></li>
+        <li><a href="#disclaimer" data-i18n="legalPage.disclaimer.title"></a></li>
+      </ul>
+    </nav>
+      <section class="legal-section" id="privacy" aria-labelledby="privacy-title">
+        <h2 id="privacy-title" data-i18n="legalPage.privacy.title"></h2>
+        <ol class="legal-list" data-list="legalPage.privacy.items">
+          <template><li><h3 data-field="h"></h3><p data-field="p"></p></li></template>
+        </ol>
+      </section>
+      <section class="legal-section" id="terms" aria-labelledby="terms-title">
+        <h2 id="terms-title" data-i18n="legalPage.terms.title"></h2>
+        <ol class="legal-list" data-list="legalPage.terms.items">
+          <template><li><h3 data-field="h"></h3><p data-field="p"></p></li></template>
+        </ol>
+      </section>
+      <section class="legal-section" id="disclaimer" aria-labelledby="disclaimer-title">
+        <h2 id="disclaimer-title" data-i18n="legalPage.disclaimer.title"></h2>
+        <ol class="legal-list" data-list="legalPage.disclaimer.items">
+          <template><li><h3 data-field="h"></h3><p data-field="p"></p></li></template>
+        </ol>
+      </section>
+  </div>
+</main>
+
+<footer class="site-footer legal-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright"></p>
+      <p class="disclaimer" data-i18n="footer.disclaimer"></p>
+    </div>
+  </div>
+</footer>
+
+<noscript><p class="noscript">يرجى تفعيل JavaScript لعرض محتوى الموقع. · Please enable JavaScript to view this site.</p></noscript>
+
+<script src="data/ar.js" defer></script>
+<script src="data/en.js" defer></script>
+<script src="js/i18n.js" defer></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>

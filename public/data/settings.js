@@ -15,7 +15,7 @@ window.SITE_SETTINGS = {
   showDemoBanner: true,
 
   // Official logo (white version, for the dark header and footer): Arabic page / English page.
-  // The hero emblem is images/logo-mark.svg; the 404 page uses images/logo-mark-dark.svg.
+  // The hero shows the office photo (images/office/hero-office.jpg); the 404 page uses images/logo-mark-dark.svg.
   logos: {
     ar: "images/logo-ar.svg",
     en: "images/logo-en.svg"
@@ -48,6 +48,33 @@ window.SITE_SETTINGS = {
     { id: "family",      icon: "family" },
     { id: "criminal",    icon: "shield" },
     { id: "arbitration", icon: "scale" }
+  ],
+
+  // ----- Licences & registration (the "Licences" section and the footer), in display order -----
+  // number → as issued; leave "" until the firm supplies it (the page then says "to be added").
+  // link   → the official page where a visitor can check it ("" = no button).
+  //          The lawyers directory is public; replace the establishment link with the firm's own entry when known.
+  licence: [
+    { id: "moj",           icon: "badge",    number: "", link: "https://eservice.sba.gov.sa/lawyers" },
+    { id: "sba",           icon: "users",    number: "", link: "https://eservice.sba.gov.sa/lawyers" },
+    { id: "establishment", icon: "building", number: "", link: "https://eservice.sba.gov.sa/" },
+    { id: "cr",            icon: "doc",      number: "", link: "" },
+    { id: "vat",           icon: "doc",      number: "", link: "https://zatca.gov.sa/en/eServices/Pages/TaxpayerLookup.aspx" }
+  ],
+
+  // ----- Partners & clients (the logo wall), in display order -----
+  // logo → picture file in images/clients/ (PNG or SVG, transparent background, about 320×120 px)
+  // name → the organisation's name (read out to screen readers)
+  // Show an organisation only with its written consent. Leave logo "" for a placeholder shape (demo).
+  clients: [
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" },
+    { name: "", logo: "" }
   ],
 
   // ----- Team, in display order -----

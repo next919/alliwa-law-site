@@ -54,6 +54,75 @@
     });
   }
 
+  // logo wall: real logos from settings, or placeholder shapes until they are supplied
+  function buildClients() {
+    const list = $('[data-clients]');
+    if (!list) return;
+    const clients = S.clients || [];
+    list.replaceChildren();
+    clients.forEach((c, i) => {
+      const li = document.createElement('li');
+      li.className = 'client-logo';
+      li.style.setProperty('--i', i);
+      if (c.logo) {
+        const img = document.createElement('img');
+        img.src = c.logo;
+        img.alt = c.name || '';
+        img.width = 160;
+        img.height = 60;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        li.classList.add('has-img');
+        li.appendChild(img);
+      } else {
+        li.setAttribute('aria-hidden', 'true');  // a placeholder says nothing; the note under the grid explains
+        li.innerHTML = `<svg class="client-mark" viewBox="0 0 160 48"><use href="#ph-logo-${(i % 8) + 1}"/></svg>`;
+      }
+      list.appendChild(li);
+    });
+    const section = list.closest('section');
+    if (section) section.hidden = clients.length === 0;
+    const note = $('[data-clients-note]');
+    if (note) note.hidden = !clients.some((c) => !c.logo);
+  }
+
+  // licence cards and the licence numbers in the footer: number from settings, or "to be added"
+  function buildLicence() {
+    const items = S.licence || [];
+    const byId = {};
+    items.forEach((it) => { byId[it.id] = it; });
+    const fillNumber = (el, it) => {
+      if (it && it.number) { el.textContent = it.number; el.classList.remove('is-pending'); delete el.dataset.i18n; }
+      else { el.dataset.i18n = 'licence.pending'; el.classList.add('is-pending'); }
+    };
+    $$('[data-licence-number]').forEach((el) => fillNumber(el, byId[el.dataset.licenceNumber]));
+
+    const list = $('[data-licence]');
+    const tpl = $('#tpl-licence');
+    if (!list || !tpl) return;
+    list.replaceChildren();
+    items.forEach((it, i) => {
+      const card = tpl.content.firstElementChild.cloneNode(true);
+      const key = 'licence.items.' + it.id;
+      $('.licence-icon use', card).setAttribute('href', '#i-' + (it.icon || 'badge'));
+      $('.licence-title', card).dataset.i18n = key + '.title';
+      $('.licence-issuer', card).dataset.i18n = key + '.issuer';
+      $('.licence-label', card).dataset.i18n = key + '.label';
+      fillNumber($('.licence-number', card), it);
+      const link = $('.licence-verify', card);
+      if (it.link && t(key + '.verify')) {
+        link.href = it.link;
+        $('span', link).dataset.i18n = key + '.verify';
+      } else {
+        link.remove();
+      }
+      card.style.setProperty('--i', i);
+      list.appendChild(card);
+    });
+    const note = $('[data-licence-note]');
+    if (note) note.hidden = items.every((it) => it.number);
+  }
+
   function buildPractice() {
     const grid = $('[data-practice]');
     const tpl = $('#tpl-area');
@@ -378,6 +447,71 @@
   }
 
   // login.html: the form is a placeholder until phase 2
+  /* ---------- Display options panel (demo): night mode, colours, shape ---------- */
+  // js/boot.js applies the saved choice before the page is drawn; this panel changes it.
+  const THEME = {
+    mode:   { attr: 'theme',  key: 'theme-mode',   def: 'light' },
+    accent: { attr: 'accent', key: 'theme-accent', def: 'official' },
+    shape:  { attr: 'shape',  key: 'theme-shape',  def: 'soft' },
+  };
+
+  // the browser bar colour follows the scheme (phones)
+  function updateThemeColor() {
+    const meta = $('meta[name="theme-color"]');
+    const c = getComputedStyle(document.documentElement).getPropertyValue('--char-700').trim();
+    if (meta && c) meta.setAttribute('content', c);
+  }
+
+  function setupThemePanel() {
+    const panel = $('[data-theme-panel]');
+    const toggle = $('[data-theme-toggle]');
+    if (!panel || !toggle) return;
+    const root = document.documentElement;
+    const current = (k) => root.getAttribute('data-' + THEME[k].attr) || THEME[k].def;
+
+    function sync() {
+      Object.keys(THEME).forEach((k) => {
+        const input = $(`input[name="theme-${k}"][value="${current(k)}"]`, panel);
+        if (input) input.checked = true;
+      });
+    }
+    function set(k, value) {
+      const o = THEME[k];
+      if (value === o.def) root.removeAttribute('data-' + o.attr);
+      else root.setAttribute('data-' + o.attr, value);
+      try { if (value === o.def) localStorage.removeItem(o.key); else localStorage.setItem(o.key, value); } catch (e) { /* not remembered */ }
+      updateThemeColor();
+    }
+    function open() {
+      sync();
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      const first = $('input:checked', panel);
+      if (first) first.focus();
+    }
+    function close(returnFocus) {
+      if (panel.hidden) return;
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      if (returnFocus) toggle.focus();
+    }
+
+    panel.addEventListener('change', (e) => {
+      const m = /^theme-(mode|accent|shape)$/.exec(e.target.name || '');
+      if (m) set(m[1], e.target.value);
+    });
+    toggle.addEventListener('click', () => (panel.hidden ? open() : close(true)));
+    $('[data-theme-close]', panel).addEventListener('click', () => close(true));
+    $('[data-theme-reset]', panel).addEventListener('click', () => {
+      Object.keys(THEME).forEach((k) => set(k, THEME[k].def));
+      sync();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) close(true); });
+    document.addEventListener('pointerdown', (e) => {
+      if (!panel.hidden && !panel.contains(e.target) && !toggle.contains(e.target)) close(false);
+    });
+  }
+
   function setupLoginPlaceholder() {
     const form = $('[data-login-form]');
     if (form) form.addEventListener('submit', (e) => e.preventDefault());
@@ -386,6 +520,8 @@
   /* ---------- Start ---------- */
 
   buildTeam();
+  buildClients();
+  buildLicence();
   buildPractice();
   buildAreaOptions();
   setupMap();
@@ -399,6 +535,8 @@
   setupBooking();
   setupForm();
   setupMobileBar();
+  setupThemePanel();
+  updateThemeColor();
   setupLoginPlaceholder();
 
   // the WhatsApp greeting is written in the page language
