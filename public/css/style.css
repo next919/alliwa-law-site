@@ -156,7 +156,18 @@ html {
   text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 8px);
+  touch-action: manipulation;   /* no zoom from a quick double tap; pinch-to-zoom stays for those who need it */
 }
+
+/* phones and tablets: every typing field at 16px or more, so iPhone never zooms in when one is tapped
+   (and never leaves the page zoomed after typing). Desktop keeps the compact sizes. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.otp-input), select, textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+/* a field that gets focus stays clear of the sticky header and of the keyboard */
+input, select, textarea { scroll-margin-top: calc(var(--header-h) + 1rem); scroll-margin-bottom: 1.5rem; }
 
 body {
   margin: 0;

@@ -448,6 +448,32 @@
   }
 
   // login.html: the form is a placeholder until phase 2
+  /* ---------- Typing on phones: the keyboard's return key moves to the next field ---------- */
+  // As in a native app: "Next" on the keyboard goes on to the next field and only the last one sends the
+  // form, so a half-filled form is never sent by accident. Text areas keep Enter for new lines.
+  // data-enter-blur on a field: when it is the last one, Enter just closes the keyboard ("Done").
+  const NOT_TYPED = ['checkbox', 'radio', 'submit', 'button', 'reset', 'file', 'range', 'color', 'hidden'];
+  const isTyped = (el) => (el instanceof HTMLInputElement && !NOT_TYPED.includes(el.type)) || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement;
+  const nextField = (el) => {
+    const fields = Array.from(el.form.elements).filter((f) => isTyped(f) && !f.disabled && !f.readOnly && f.getClientRects().length > 0);
+    return fields[fields.indexOf(el) + 1] || null;
+  };
+  function setupEnterNext() {
+    document.addEventListener('focusin', (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement) || NOT_TYPED.includes(el.type) || !el.form) return;
+      el.setAttribute('enterkeyhint', nextField(el) ? 'next' : el.hasAttribute('data-enter-blur') ? 'done' : 'go');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement) || NOT_TYPED.includes(el.type) || !el.form) return;
+      const next = nextField(el);
+      if (next) { e.preventDefault(); next.focus(); }
+      else if (el.hasAttribute('data-enter-blur')) { e.preventDefault(); el.blur(); }
+    });
+  }
+
   /* ---------- Display options panel (demo): night mode, colours, shape ---------- */
   // js/boot.js applies the saved choice before the page is drawn; this panel changes it.
   const THEME = {
@@ -554,6 +580,7 @@
   setupForm();
   setupMobileBar();
   setupThemePanel();
+  setupEnterNext();
   updateThemeColor();
 
   // the WhatsApp greeting is written in the page language

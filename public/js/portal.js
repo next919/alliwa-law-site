@@ -1051,7 +1051,7 @@
         <h2>${G('signTitle')}</h2>
         <div class="field">
           <label for="s-name">${G('fullName')} <span class="req" aria-hidden="true">*</span></label>
-          <input class="input" id="s-name" name="name" autocomplete="name" required value="${esc(c.client.name.replace(/\s*\(.*\)$/, ''))}" aria-describedby="s-name-err">
+          <input class="input" id="s-name" name="name" autocomplete="name" data-enter-blur required value="${esc(c.client.name.replace(/\s*\(.*\)$/, ''))}" aria-describedby="s-name-err">
           <p class="field-error" id="s-name-err" hidden></p>
         </div>
         <div class="sig-tabs" role="tablist">

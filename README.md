@@ -65,6 +65,13 @@ probably missing in the file you just changed (the browser console shows the lin
 
 Useful links: `?lang=en` or `?lang=ar` at the end of the address opens the site in that language.
 
+## Typing on phones
+
+Every typing field is at least 16px on touch screens, so iPhone never zooms in when one is tapped (and the page
+is never left zoomed after typing); a quick double tap does not zoom either, while pinch-to-zoom stays available.
+The keyboard's return key says "Next" and moves to the next field; only the last field sends the form
+(`setupEnterNext()` in `js/main.js`; `data-enter-blur` on a field makes its return key just close the keyboard).
+
 ## Display options (demo)
 
 The **Display options** button in the grey strip at the top opens a panel with: light / dark mode, three colour
