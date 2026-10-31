@@ -39,8 +39,9 @@
     set(k, v, area) { try { (area || localStorage).setItem(k, v); } catch (e) { memory[k] = v; } },
     del(k, area) { try { (area || localStorage).removeItem(k); } catch (e) { delete memory[k]; } },
   };
-  const getSession = () => { try { return JSON.parse(store.get(SESSION_KEY, sessionStorage)) || null; } catch (e) { return null; } };
-  const setSession = (s) => store.set(SESSION_KEY, JSON.stringify(s), sessionStorage);
+  // the demo session lasts until "Sign out", also in new tabs (so a link opened from WhatsApp is already signed in)
+  const getSession = () => { try { return JSON.parse(store.get(SESSION_KEY)) || null; } catch (e) { return null; } };
+  const setSession = (s) => store.set(SESSION_KEY, JSON.stringify(s));
 
   // ---------- formatting ----------
   const lang = () => I18N.lang;
@@ -108,11 +109,11 @@
   function load() {
     if (contracts) return contracts;
     try { const d = JSON.parse(store.get(DATA_KEY)); if (Array.isArray(d)) contracts = d; } catch (e) { /* fresh start */ }
-    if (!contracts) { contracts = seed(); save(); }
+    if (!contracts) { contracts = page === 'sign' ? [] : seed(); if (page !== 'sign') save(); }
     return contracts;
   }
   function save() { store.set(DATA_KEY, JSON.stringify(contracts)); }
-  const find = (id) => load().find((c) => c.id === id);
+  const find = (id, token) => load().find((c) => c.id === id && (!token || c.token === token));
   // seeded agreements get their fingerprint the first time they are shown
   async function ensureHash(c) {
     if (c.status !== 'draft' && !c.hash) { c.hash = await sha256(contractBody(c)); save(); }
@@ -123,7 +124,87 @@
     const max = load().reduce((m, c) => { const r = /^FA-(\d{4})-(\d+)$/.exec(c.id); return r && +r[1] === year ? Math.max(m, +r[2]) : m; }, 0);
     return 'FA-' + year + '-' + String(max + 1).padStart(4, '0');
   }
-  const signLink = (c) => new URL('sign.html?c=' + encodeURIComponent(c.id) + '&k=' + encodeURIComponent(c.token), location.href).href;
+  /* Without a server, a link has to carry its own data. The signing link holds a copy of the agreement
+     (after the #, which browsers never send to a server), so it opens on any phone or browser. After signing,
+     the confirmation link carries the agreement back with the signature (drawn signatures as compact strokes).
+     Phase 2 replaces both with records on the server. */
+  const b64u = {
+    enc(bytes) { let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+    dec(str) { const t64 = str.replace(/-/g, '+').replace(/_/g, '/'); const bin = atob(t64 + '='.repeat((4 - (t64.length % 4)) % 4)); return Uint8Array.from(bin, (ch) => ch.charCodeAt(0)); },
+  };
+  const packJson = (v) => b64u.enc(new TextEncoder().encode(JSON.stringify(v)));
+  const unpackJson = (str) => JSON.parse(new TextDecoder().decode(b64u.dec(str)));
+  const str = (v) => (v == null ? '' : String(v));
+  function packContract(c) {
+    const sent = (c.events || []).find((e) => e.type === 'sent');
+    return [1, c.id, c.token, c.lang, c.createdAt, sent ? sent.at : c.updatedAt, c.lawyer,
+      str(c.client.name), str(c.client.idType), str(c.client.idNumber), str(c.client.phone), str(c.client.email), str(c.client.address),
+      str(c.matter.area), str(c.matter.title), str(c.matter.scope),
+      c.fees.amount, str(c.fees.vat), str(c.fees.schedule), str(c.fees.custom),
+      str(c.duration), str(c.city), str(c.terms)];
+  }
+  function unpackContract(a) {
+    if (!Array.isArray(a) || a[0] !== 1 || a.length < 23) return null;
+    const [, id, token, lang, createdAt, sentAt, lawyer, name, idType, idNumber, phone, email, address, area, title, scope, amount, vat, schedule, custom, duration, city, terms] = a;
+    // same key order as the portal's own records, so the fingerprint comes out identical
+    return {
+      id, token, status: 'sent', lang, createdAt, updatedAt: sentAt, lawyer,
+      client: { name, idType, idNumber, phone, email, address },
+      matter: { area, title, scope },
+      fees: { amount, vat, schedule, custom },
+      duration, city, terms, hash: '', remote: true,
+      events: [{ type: 'created', at: createdAt }, { type: 'sent', at: sentAt }],
+    };
+  }
+  const signLink = (c) => new URL('sign.html?c=' + encodeURIComponent(c.id) + '&k=' + encodeURIComponent(c.token) + '&lang=' + (c.lang || 'ar') + '#v1.' + packJson(packContract(c)), location.href).href;
+  function returnLink(c) {
+    const sg = c.signature || {};
+    const viewed = (c.events || []).find((e) => e.type === 'viewed');
+    const head = packJson([packContract(c), [sg.name, sg.at, sg.method, sg.ratio || 0, viewed ? viewed.at : 0]]);
+    return new URL('portal.html#/receive/v1.' + head + (sg.method === 'drawn' && sg.vec ? '.' + sg.vec : ''), location.href).href;
+  }
+  // drawn signature <-> bytes: strokes on a 1000-wide grid, as zigzag varint deltas
+  function encodeStrokes(strokes) {
+    const out = [];
+    const put = (n) => { n = n < 0 ? -2 * n - 1 : 2 * n; while (n >= 0x80) { out.push((n & 0x7f) | 0x80); n = Math.floor(n / 128); } out.push(n); };
+    const kept = strokes.map((pts) => {
+      const q = [];
+      for (let i = 0; i < pts.length; i += 2) {
+        const x = Math.round(pts[i]), y = Math.round(pts[i + 1]);
+        const n = q.length;
+        if (!n || i === pts.length - 2 || Math.abs(x - q[n - 2]) + Math.abs(y - q[n - 1]) >= 3) q.push(x, y);
+      }
+      return q;
+    }).filter((q) => q.length);
+    put(kept.length);
+    kept.forEach((q) => { put(q.length / 2); let px = 0, py = 0; for (let i = 0; i < q.length; i += 2) { put(q[i] - px); put(q[i + 1] - py); px = q[i]; py = q[i + 1]; } });
+    return new Uint8Array(out);
+  }
+  function decodeStrokes(bytes) {
+    let i = 0;
+    const get = () => { let n = 0, mul = 1, b; do { b = bytes[i++]; n += (b & 0x7f) * mul; mul *= 128; } while (b & 0x80 && i < bytes.length); return n % 2 ? -(n + 1) / 2 : n / 2; };
+    const strokes = [];
+    for (let s = get(); s > 0 && i < bytes.length; s--) {
+      const pts = []; let x = 0, y = 0;
+      for (let k = get(); k > 0 && i < bytes.length; k--) { x += get(); y += get(); pts.push(x, y); }
+      strokes.push(pts);
+    }
+    return strokes;
+  }
+  function strokesToImage(strokes, ratio) {
+    const W = 600, H = Math.max(120, Math.round(W * (ratio || 0.45)));
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'), k = W / 1000;
+    ctx.lineWidth = 3.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#14213d';
+    strokes.forEach((pts) => {
+      ctx.beginPath(); ctx.moveTo(pts[0] * k, pts[1] * k);
+      for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i] * k, pts[i + 1] * k);
+      if (pts.length === 2) ctx.lineTo(pts[0] * k + 0.1, pts[1] * k + 0.1);
+      ctx.stroke();
+    });
+    return cv.toDataURL('image/png');
+  }
 
   // ---------- toast ----------
   function toast(msg) {
@@ -289,7 +370,8 @@
         return;
       }
       setSession({ email: DEMO_USER.email, role: 'admin', at: Date.now() });
-      location.href = 'portal.html';
+      const next = new URLSearchParams(location.search).get('next') || '';
+      location.href = 'portal.html' + (/^#\/[\w./-]*$/.test(next) ? next : '');
     });
     [email, pass].forEach((el) => el.addEventListener('input', () => { err.hidden = true; [email, pass].forEach((x) => x.removeAttribute('aria-invalid')); }));
   }
@@ -312,7 +394,7 @@
 
   function setupPortal() {
     session = getSession();
-    if (!session) { location.replace('login.html'); return; }
+    if (!session) { location.replace('login.html' + (location.hash ? '?next=' + encodeURIComponent(location.hash) : '')); return; }
     load();
     // role switch (demo): shows how the menu changes with permissions
     const roleSel = $('[data-role-switch]');
@@ -321,7 +403,7 @@
     };
     fillRoles();
     roleSel.addEventListener('change', () => { session.role = roleSel.value; setSession(session); renderNav(); route(); });
-    $('[data-logout]').addEventListener('click', () => { store.del(SESSION_KEY, sessionStorage); location.href = 'login.html'; });
+    $('[data-logout]').addEventListener('click', () => { store.del(SESSION_KEY); location.href = 'login.html'; });
 
     // phone menu (drawer)
     const nav = $('[data-portal-nav]'), navBtn = $('[data-portal-menu]'), shade = $('[data-portal-shade]');
@@ -352,10 +434,41 @@
     $('[data-user-role]').textContent = t('portal.roles.' + session.role);
   }
 
+  // a client's confirmation link: the agreement comes back signed (created here if this browser lacks it)
+  function receive(payload) {
+    const view = $('[data-portal-view]');
+    try {
+      if (!/^v1\./.test(payload || '')) throw new Error('format');
+      const [head, vec] = payload.slice(3).split('.');
+      const data = unpackJson(head);
+      const remote = unpackContract(data[0]);
+      const [name, at, method, ratio, viewedAt] = data[1] || [];
+      if (!remote || !name || !at) throw new Error('data');
+      let c = find(remote.id, remote.token);
+      if (!c) { c = remote; delete c.remote; load().push(c); }
+      if (c.status !== 'signed') {
+        const image = method === 'drawn' && vec ? strokesToImage(decodeStrokes(b64u.dec(vec)), ratio) : '';
+        c.signature = image ? { method: 'drawn', image, name, at } : { method: 'typed', name, at };
+        c.status = 'signed'; c.updatedAt = at;
+        if (viewedAt && !c.events.some((e) => e.type === 'viewed')) c.events.push({ type: 'viewed', at: viewedAt });
+        if (!c.events.some((e) => e.type === 'signed')) c.events.push({ type: 'signed', at });
+        c.events.sort((x, y) => x.at - y.at);
+        save();
+        toast(t('portal.receive.done'));
+      } else toast(t('portal.receive.already'));
+      history.replaceState(history.state, '', '#/contracts/' + c.id);
+      renderNav();
+      route();
+    } catch (e) {
+      view.innerHTML = `<section class="p-empty">${icon('lock')}<h1>${esc(t('portal.receive.errorTitle'))}</h1><p>${esc(t('portal.receive.error'))}</p><a class="btn btn-ghost" href="#/contracts">${esc(t('portal.detail.back'))}</a></section>`;
+    }
+  }
+
   function route() {
     const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
     const view = $('[data-portal-view]');
     const [section = 'overview', id, sub] = parts;
+    if (section === 'receive') { if (can('contractsView')) receive(id); else view.innerHTML = viewDenied(); return; }
     $$('[data-portal-nav-list] a').forEach((a) => { if (a.getAttribute('href') === '#/' + section) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     let html;
     if (section === 'overview') html = can('overview') ? viewOverview() : viewDenied();
@@ -722,7 +835,7 @@
      ======================================================================= */
   function signaturePad(canvas) {
     const ctx = canvas.getContext('2d');
-    let drawing = false, empty = true, ratio = 1;
+    let drawing = false, empty = true, ratio = 1, strokes = [], aspect = 0.45;
     function size() {
       const r = canvas.getBoundingClientRect();
       const keep = empty ? null : canvas.toDataURL();
@@ -733,16 +846,30 @@
       ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#14213d';
       if (keep) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, r.width, r.height); img.src = keep; }
     }
-    const pos = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-    canvas.addEventListener('pointerdown', (e) => { drawing = true; canvas.setPointerCapture(e.pointerId); const [x, y] = pos(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.1, y + 0.1); ctx.stroke(); empty = false; canvas.dispatchEvent(new Event('sigchange')); });
-    canvas.addEventListener('pointermove', (e) => { if (!drawing) return; const [x, y] = pos(e); ctx.lineTo(x, y); ctx.stroke(); });
+    const pos = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top, r.width, r.height]; };
+    const grid = (x, y, w) => [x / w * 1000, y / w * 1000];
+    canvas.addEventListener('pointerdown', (e) => {
+      drawing = true;
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* some touch browsers refuse; drawing still works */ }
+      const [x, y, w, h] = pos(e);
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.1, y + 0.1); ctx.stroke();
+      strokes.push(grid(x, y, w)); aspect = h / w;
+      empty = false; canvas.dispatchEvent(new Event('sigchange'));
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const [x, y, w] = pos(e);
+      ctx.lineTo(x, y); ctx.stroke();
+      strokes[strokes.length - 1].push(...grid(x, y, w));
+    });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => canvas.addEventListener(ev, () => { drawing = false; }));
     window.addEventListener('resize', size);
     size();
     return {
       isEmpty: () => empty,
-      clear() { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; canvas.dispatchEvent(new Event('sigchange')); },
+      clear() { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; strokes = []; canvas.dispatchEvent(new Event('sigchange')); },
       data: () => canvas.toDataURL('image/png'),
+      vector: () => ({ vec: b64u.enc(encodeStrokes(strokes)), ratio: Math.round(aspect * 1000) / 1000 }),
     };
   }
 
@@ -750,7 +877,13 @@
     const box = $('[data-sign-view]');
     const params = new URLSearchParams(location.search);
     const id = params.get('c'), key = params.get('k');
-    const c = id ? find(id) : null;
+    let c = id && key ? find(id, key) : null;
+    if (!c && id && key && /^#v1\./.test(location.hash)) {
+      try {
+        const remote = unpackContract(unpackJson(location.hash.slice(4)));
+        if (remote && remote.id === id && remote.token === key) { load().push(remote); save(); c = remote; }
+      } catch (e) { /* damaged link: shown as invalid below */ }
+    }
     let justSigned = false;
 
     function render() {
@@ -768,12 +901,35 @@
         </section>
         ${signed ? `<section class="sign-done" tabindex="-1" data-done>${icon('check-circle')}<div><h2>${esc(t(justSigned ? 'sign.doneTitle' : 'sign.signedTitle'))}</h2>${justSigned ? `<p>${esc(t('sign.doneText'))}</p>` : ''}
           <div class="sign-done-actions"><button class="btn btn-primary" type="button" data-print>${icon('print')}<span>${esc(t('sign.download'))}</span></button><a class="btn btn-ghost" href="index.html">${esc(t('sign.toSite'))}</a></div></div></section>` : ''}
+        ${signed && c.remote ? returnSection() : ''}
         <div class="sign-doc">${renderContract(c)}</div>
         ${signed ? '' : signForm()}`;
       if (signed) {
         $('[data-print]').addEventListener('click', () => printContract(c));
+        const copyBtn = $('[data-copy-return]');
+        if (copyBtn) copyBtn.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(returnLink(c)); } catch (e) { const inp = $('#return-link'); inp.hidden = false; inp.select(); }
+          toast(t('sign.return.copied'));
+        });
         if (justSigned) { const d = $('[data-done]'); d.focus(); d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       } else bindSign();
+    }
+
+    // demo only: in phase 2 the signature reaches the firm by itself
+    function returnSection() {
+      const link = returnLink(c);
+      const msg = fill(t('sign.return.message'), { no: c.id, link });
+      const wa = String(S.whatsapp || '').replace(/\D/g, '');
+      return `
+        <section class="sign-return p-card">
+          <h2>${esc(t('sign.return.title'))}</h2>
+          <p>${esc(t('sign.return.text'))}</p>
+          <div class="p-share">
+            <a class="btn btn-whatsapp" href="https://wa.me/${wa}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${icon('whatsapp')}<span>${esc(t('sign.return.whatsapp'))}</span></a>
+            <button class="btn btn-ghost" type="button" data-copy-return>${icon('copy')}<span>${esc(t('sign.return.copy'))}</span></button>
+          </div>
+          <input class="input input-ltr" id="return-link" dir="ltr" readonly value="${esc(link)}" hidden aria-label="${esc(t('sign.return.copy'))}">
+        </section>`;
     }
 
     function signForm() {
@@ -848,7 +1004,7 @@
         }
         if (toLatin($('#s-otp', form).value).trim() !== DEMO_OTP) { err('s-otp-err', t('sign.errors.otp')); $('#s-otp', form).focus(); return; }
         const at = Date.now();
-        c.signature = mode === 'draw' ? { method: 'drawn', image: pad.data(), name: nameIn.value.trim(), at } : { method: 'typed', name: nameIn.value.trim(), at };
+        c.signature = mode === 'draw' ? Object.assign({ method: 'drawn', image: pad.data(), name: nameIn.value.trim(), at }, pad.vector()) : { method: 'typed', name: nameIn.value.trim(), at };
         c.status = 'signed'; c.updatedAt = at;
         c.events.push({ type: 'signed', at });
         save();

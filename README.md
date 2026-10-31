@@ -108,8 +108,13 @@ to the new domain.
 - **E-contracts:** create a fee agreement (client, matter, fees with or without 15% VAT, payment, lawyer,
   Arabic or English) → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
   → a signing link for the client (copy, WhatsApp, email) → on `sign.html` the client reads it, signs with a
-  finger or by typing, ticks the consent and enters a code (demo code **1234**) → the agreement shows as
-  *Signed* with the signature, the time and the history. *Print / save as PDF* gives a clean A4 copy.
+  finger or by typing, ticks the consent and enters a code (demo code **1234**) → the client's page offers
+  *Send confirmation to the firm* (WhatsApp to the firm's number, or copy) → opening that confirmation link in the
+  portal marks the agreement *Signed* with the signature, the time and the history. *Print / save as PDF* gives a
+  clean A4 copy.
+- **Links work on any phone:** with no server, the signing link carries a copy of the agreement after the `#`
+  (never sent to a server), and the confirmation link carries it back with the signature (drawn signatures as
+  compact strokes). Both are a few hundred characters long. The fingerprint is recalculated on each side and matches.
 - **Permissions:** "View as" switches between Administrator, Lawyer, Trainee lawyer and Admin staff to show
   how the menu and actions change (trainees do not see contracts; admin staff can only view them). The
   matrix is on *Users & permissions*, which also has *Reset demo data*.
@@ -117,9 +122,9 @@ to the new domain.
 - The agreement text is under `contract` in `data/portal-ar.js` / `data/portal-en.js`: a draft for the firm
   to review. Every copy is marked "demo template — not valid for use".
 
-**This is a front-end demo, not a secure system:** the account is checked in the browser and all data stays
-in that browser (localStorage), so the client must open a signing link on the same device. Phase 2 needs a
-backend: personal accounts with permissions checked on the server, an encrypted database, sending the link
+**This is a front-end demo, not a secure system:** the account is checked in the browser, the portal's list is
+kept in that browser (localStorage), and the signature returns through the confirmation link instead of a server.
+Phase 2 needs a backend: personal accounts with permissions checked on the server, an encrypted database, sending the link
 and code by SMS/email, an approved e-signature or Nafath identity check, server-made PDFs and an audit log.
 
 ## Before launch

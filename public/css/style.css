@@ -2427,6 +2427,14 @@ html[data-theme="dark"] .sig-tabs [aria-selected="true"] { border-bottom-color: 
 html[data-theme="dark"] .sign-done { border-color: #2f5a43; background: #14261c; }
 html[data-theme="dark"] .sign-done p { color: #b9e3c9; }
 
+.sign-return { display: grid; gap: .5rem; max-width: 820px; margin: 0 auto 1.5rem; }
+.sign-return h2 { margin: 0; }
+.sign-return p { margin: 0; color: var(--ink-700); }
+.sign-return .p-share { display: grid; grid-template-columns: minmax(0, 1fr); margin: .5rem 0 0; }
+.sign-return .input { font-size: .8rem; }
+.sign-return .input[hidden] { display: none; }
+@media (min-width: 560px) { .sign-return .p-share { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
 /* print: only the agreement, as an A4 page */
 #print-root { display: none; }
 @media print {

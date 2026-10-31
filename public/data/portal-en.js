@@ -131,7 +131,7 @@
       whatsapp: "WhatsApp",
       email: "Email",
       open: "Try the client page",
-      demoNote: "In the demo the data stays in this browser only, so open the link on the same device.",
+      demoNote: "The link carries a copy of the agreement, so it opens on any phone. After signing, the client sends a confirmation that brings the agreement back to this portal as signed; in the final version this happens automatically.",
       close: "Close",
       subject: "Fee agreement no. {no}",
       message: "Dear {client}, please find fee agreement no. {no} from Khalid Allewa Lawyers and Consultants for your review and e-signature: {link}"
@@ -170,6 +170,12 @@
       documents: { title: "Documents", items: ["Upload and file documents by case", "Access permissions per document", "Secure sharing with the client"] },
       invoices: { title: "Invoices", items: ["Invoices linked to fee agreements and payments", "Tracking paid and outstanding amounts", "E-invoicing in line with ZATCA requirements"] }
     },
+    receive: {
+      done: "The client's signature has arrived; the agreement is now signed.",
+      already: "This agreement was already signed.",
+      errorTitle: "Invalid confirmation link",
+      error: "The confirmation link could not be read. Make sure it was opened in full, exactly as received."
+    },
     denied: {
       title: "No access",
       text: "This section is not available to the “{role}” role. Change the role in “View as” to try other permissions."
@@ -182,7 +188,7 @@
     hello: "Hello {client}",
     intro: "Khalid Allewa Lawyers and Consultants has sent you the fee agreement below. Please read it carefully, then sign it electronically at the bottom of the page.",
     notFound: "Invalid link",
-    notFoundText: "Check the link you received or contact the firm. (In the demo, open the link in the same browser where the agreement was created.)",
+    notFoundText: "Make sure the link was opened in full, exactly as you received it, or ask the firm to send a new one.",
     notReady: "This agreement has not been approved for signature yet.",
     signTitle: "Electronic signature",
     fullName: "Full name as on your ID",
@@ -209,6 +215,14 @@
     doneText: "Thank you. The signed copy has been kept by the firm, and you can save your copy now.",
     signedTitle: "This agreement is signed",
     download: "Save my copy (PDF)",
+    return: {
+      title: "Send the confirmation to the firm",
+      text: "In the final version your signature reaches the firm automatically. In this demo, send this confirmation to the firm so the agreement shows as signed in its portal.",
+      whatsapp: "Send confirmation on WhatsApp",
+      copy: "Copy confirmation link",
+      copied: "Confirmation link copied.",
+      message: "Fee agreement no. {no} has been signed. Confirmation link: {link}"
+    },
     toSite: "Visit the firm's website"
   };
 
