@@ -22,6 +22,7 @@
   const SESSION_KEY = 'kh-demo-session';
   const DATA_KEY = 'kh-demo-contracts-v1';
   const DEMO_OTP = '1234';
+  const NEXT_KEY = 'kh-demo-next';
 
   // what each role may open or do (the server enforces this in phase 2)
   const ROLES = {
@@ -62,7 +63,6 @@
     return { amount, vat: 0, total: amount };
   }
   const memberName = (id, l) => t('team.members.' + id + '.name', l);
-  const areaName = (id, l) => (id && id !== 'other' ? t('practice.areas.' + id + '.title', l) : t('portal.form.areaOther', l));
   const licenceNo = (l) => { const m = (S.licence || []).find((x) => x.id === 'moj'); return (m && m.number) || t('licence.pending', l); };
 
   async function sha256(text) {
@@ -83,10 +83,10 @@
     return [
       {
         id: 'FA-2026-0003', status: 'draft', lang: 'both', createdAt: now - 2 * hr, updatedAt: now - 2 * hr, lawyer: 'khalid',
-        client: { name: 'مؤسسة النموذج للمقاولات' + tag, idType: 'cr', idNumber: '7000000003', phone: '0500000003', email: 'client3@example.com', address: 'الجبيل الصناعية' },
+        client: { name: 'مؤسسة النموذج للمقاولات' + tag, idType: 'cr', idNumber: '7000000003', phone: '0500000003', email: 'client3@example.com', address: 'الجبيل الصناعية', rep: 'عبدالله محمد' + tag, repCapacity: 'مالك المؤسسة' },
         matter: { area: 'commercial', title: 'صياغة ومراجعة عقود توريد', scope: 'مراجعة نماذج عقود التوريد الحالية، وصياغة نموذج موحد، وتقديم مذكرة بالملاحظات النظامية.' },
         fees: { amount: 12000, vat: 'excl', schedule: 'two', custom: '' }, duration: '', city: 'الجبيل', terms: '',
-        en: { clientName: 'Al Namoothaj Contracting Est. (demo)', address: 'Jubail Industrial City', title: 'Drafting and reviewing supply contracts', scope: 'Reviewing the current supply contract templates, drafting a unified template, and providing a memo of legal observations.', custom: '', duration: '', city: 'Jubail', terms: '' },
+        en: { clientName: 'Al Namoothaj Contracting Est. (demo)', address: 'Jubail Industrial City', title: 'Drafting and reviewing supply contracts', scope: 'Reviewing the current supply contract templates, drafting a unified template, and providing a memo of legal observations.', custom: '', duration: '', city: 'Jubail', terms: '', rep: 'Abdullah Mohammed (demo)', repCapacity: 'Owner of the establishment' },
         events: [{ type: 'created', at: now - 2 * hr }],
       },
       {
@@ -113,10 +113,26 @@
     if (contracts) return contracts;
     try { const d = JSON.parse(store.get(DATA_KEY)); if (Array.isArray(d)) contracts = d; } catch (e) { /* fresh start */ }
     if (!contracts) { contracts = page === 'sign' ? [] : seed(); if (page !== 'sign') save(); }
+    else if (page !== 'sign') {
+      // a browser that opened an earlier version of the demo gets the current sample, unless it was edited
+      const i = contracts.findIndex((c) => c && c.id === 'FA-2026-0003' && c.status === 'draft' && c.updatedAt === c.createdAt
+        && (c.events || []).length === 1 && c.client && c.client.idNumber === '7000000003' && !c.client.rep);
+      if (i >= 0) { contracts[i] = seed()[0]; save(); }
+    }
     return contracts;
   }
   function save() { store.set(DATA_KEY, JSON.stringify(contracts)); }
-  const find = (id, token) => load().find((c) => c.id === id && (!token || c.token === token));
+  /* A copy received from a client can share its number with a draft made in this browser (each browser numbers
+     on its own), so a portal link names an agreement by number~token whenever the number alone is not unique. */
+  const RANK = { signed: 2, sent: 1, draft: 0 };
+  function find(where, token) {
+    const [id, key] = String(where || '').split('~');
+    const same = load().filter((c) => c.id === id);
+    if (token || (key && key !== 'draft')) return same.find((c) => c.token === (token || key));
+    if (key === 'draft') return same.find((c) => !c.token);
+    return same.sort((x, y) => (RANK[y.status] || 0) - (RANK[x.status] || 0))[0];
+  }
+  const ref = (c) => (load().filter((x) => x.id === c.id).length > 1 ? c.id + '~' + (c.token || 'draft') : c.id);
   // seeded agreements get their fingerprint the first time they are shown
   async function ensureHash(c) {
     if (c.status !== 'draft' && !c.hash) { c.hash = await sha256(contractBody(c)); save(); }
@@ -146,7 +162,11 @@
       str(c.client.name), str(c.client.idType), str(c.client.idNumber), str(c.client.phone), str(c.client.email), str(c.client.address),
       str(c.matter.area), str(c.matter.title), str(c.matter.scope),
       c.fees.amount, str(c.fees.vat), str(c.fees.schedule), str(c.fees.custom),
-      str(c.duration), str(c.city), str(c.terms)].concat(c.lang === 'both' ? EN_KEYS.map((k) => str((c.en || {})[k])) : []);
+      str(c.duration), str(c.city), str(c.terms)]
+      .concat(c.lang === 'both' ? EN_KEYS.map((k) => str((c.en || {})[k])) : [])
+      // a company's representative, last (only agreements that have one, so older links read the same)
+      .concat('rep' in c.client ? [[str(c.client.rep), str(c.client.repCapacity)]
+        .concat(c.lang === 'both' && c.en && 'rep' in c.en ? [str(c.en.rep), str(c.en.repCapacity)] : [])] : []);
   }
   function unpackContract(a) {
     if (!Array.isArray(a) || a[0] !== 1 || a.length < 23) return null;
@@ -164,6 +184,11 @@
       if (a.length < 23 + EN_KEYS.length) return null;
       c.en = {};
       EN_KEYS.forEach((k, i) => { c.en[k] = a[23 + i]; });
+    }
+    const extra = a[lang === 'both' ? 23 + EN_KEYS.length : 23];
+    if (Array.isArray(extra)) {
+      c.client.rep = str(extra[0]); c.client.repCapacity = str(extra[1]);
+      if (c.en && extra.length >= 4) { c.en.rep = str(extra[2]); c.en.repCapacity = str(extra[3]); }
     }
     return c;
   }
@@ -233,54 +258,74 @@
   const isBi = (c) => c.lang === 'both';
   const span = (L, html) => `<span class="cd-l" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">${html}</span>`;
   const per = (langs, fn) => langs.map((L) => span(L, esc(fn(L)))).join('');
+  const br = (html) => html.replace(/\r?\n/g, '<br>');
+  const hasArabic = (s) => /[\u0600-\u06FF]/.test(s || '');
+  const trimEnd = (s) => String(s || '').trim().replace(/[\s.,;:،؛]+$/, '');
+  // what the portal lists and searches by: a bilingual agreement shows its English names in the English UI
+  const namesIn = (c, L) => (isBi(c) && L === 'en' ? fieldsIn(c, 'en') : { clientName: c.client.name, title: c.matter.title });
 
   // the agreement's own fields in one language (a bilingual agreement keeps its English in c.en)
   function fieldsIn(c, L) {
     const en = isBi(c) && L === 'en' ? (c.en || {}) : null;
-    const pick = (base, key) => (en && en[key] ? en[key] : base) || '';
-    const other = isBi(c) ? (c.en || {}).terms : '';
+    // names, address, subject and payment fall back to the Arabic if an English one is missing;
+    // term, city and extra terms never do (each language has its own default)
+    const pick = (base, key) => (en ? en[key] || base : base) || '';
+    const own = (base, key) => (en ? en[key] : base) || '';
     return {
       clientName: pick(c.client.name, 'clientName'), address: pick(c.client.address, 'address'),
+      rep: pick(c.client.rep, 'rep'), capacity: pick(c.client.repCapacity, 'repCapacity'),
       title: pick(c.matter.title, 'title'), scope: pick(c.matter.scope, 'scope'), custom: pick(c.fees.custom, 'custom'),
-      duration: pick(c.duration, 'duration'), city: pick(c.city, 'city'),
-      terms: (L === 'en' && isBi(c) ? other || c.terms : c.terms || other) || '',
+      duration: own(c.duration, 'duration'), city: own(c.city, 'city'), terms: own(c.terms, 'terms'),
     };
   }
+  // the Term article reads "…shall remain in force {duration}", so a bare "one year" becomes "for one year"
+  function durationText(text, L) {
+    const s = trimEnd(text);
+    if (!s || L !== 'en' || /^(for|until|till|up to|through|throughout|during|from|as long|so long|while|unless|pending|by)\b/i.test(s)) return s;
+    return 'for ' + s;
+  }
 
-  // everything one language column needs
-  function docParts(c, L) {
+  // everything one language column needs (forceTerms: the other language has extra terms, so keep the rows paired)
+  function docParts(c, L, forceTerms) {
     const T = (k) => t('contract.' + k, L);
     const f = fieldsIn(c, L);
     const n = feeNumbers(c);
+    const cash = (x) => esc(fill(T('table.money'), { n: money(x) }));
+    const area = c.matter.area && c.matter.area !== 'other' ? T('areas.' + c.matter.area) : '';
+    const custom = trimEnd(f.custom);
     const vars = {
-      matter: esc(f.title), area: esc(areaName(c.matter.area, L)), scope: esc(f.scope),
-      duration: esc(f.duration || t('portal.form.durationDefault', L)), city: esc(f.city || t('portal.form.cityDefault', L)),
-      fees: fill(T('fees.' + c.fees.vat), { amount: money(n.amount), vat: money(n.vat), total: money(n.total) }),
-      schedule: fill(T('schedule.' + c.fees.schedule), { custom: esc(f.custom) }),
+      matter: esc(f.title), area: area ? esc(fill(T('areaPhrase'), { name: area })) : '', scope: br(esc(f.scope)),
+      duration: esc(durationText(f.duration, L) || t('portal.form.durationDefault', L)), city: esc(trimEnd(f.city) || t('portal.form.cityDefault', L)),
+      fees: esc(fill(T('fees.' + c.fees.vat), { amount: money(n.amount), vat: money(n.vat), total: money(n.total) })),
+      schedule: fill(esc(T('schedule.' + c.fees.schedule)), { custom: esc(custom) }),
     };
     const clauses = (t('contract.clauses', L) || []).map((cl) => Object.assign({}, cl));
-    if (f.terms) clauses.push({ h: T('extraTerms'), p: f.terms, raw: true });
+    // extra terms go before the governing-law article
+    if (f.terms || forceTerms) {
+      const at = clauses.findIndex((cl) => cl.id === 'law');
+      clauses.splice(at < 0 ? clauses.length : at, 0, { h: T('extraTerms'), p: f.terms || '—', raw: true });
+    }
     if (isBi(c)) clauses.push(t('contract.language', L));
     clauses.push(t('contract.copies', L));
     const ordinals = t('contract.ordinals', 'ar') || [];
     const heading = (i, h) => fill(T('article'), { n: L === 'ar' ? ordinals[i] || String(i + 1) : String(i + 1), h });
-    const body = (cl) => (cl.p ? `<p>${cl.raw ? esc(cl.p) : fill(esc(cl.p), vars)}</p>` : '')
+    const body = (cl) => (cl.p ? `<p>${cl.raw ? br(esc(cl.p)) : fill(esc(cl.p), vars)}</p>` : '')
       + (cl.items ? `<ol class="cd-items">${cl.items.map((it) => `<li>${fill(esc(it), vars)}</li>`).join('')}</ol>` : '')
       + (cl.note ? `<p>${fill(esc(cl.note), vars)}</p>` : '');
-    const idTypeLabel = t('portal.form.idTypes.' + (c.client.idType || 'id'), L);
     const row = (label, value) => (value ? `<div><dt>${esc(label)}</dt><dd><bdi>${esc(value)}</bdi></dd></div>` : '');
+    const lawyer = c.lawyer || 'khalid';
     const partyA = `<h3>${esc(T('partyA'))}</h3><p class="cd-party-name">${esc(T('firmName'))}</p>`
-      + `<p>${esc(fill(T('firmRep'), { lawyer: memberName(c.lawyer || 'khalid', L) }))}</p>`
+      + `<p>${esc(fill(T('firmRep'), { lawyer: memberName(lawyer, L), role: t('team.members.' + lawyer + '.role', L) }))}</p>`
       + `<p>${esc(fill(T('firmLicence'), { licence: licenceNo(L) }))}</p><p>${esc(T('firmCity'))}</p>`;
     const partyB = `<h3>${esc(T('partyB'))}</h3><p class="cd-party-name">${esc(f.clientName)}</p>`
-      + `<dl>${row(T('labels.id') + ' (' + idTypeLabel + ')', c.client.idNumber)}${row(T('labels.phone'), c.client.phone)}`
+      + (f.rep ? `<p>${esc(fill(T('clientRep'), { rep: f.rep, capacity: f.capacity || '—' }))}</p>` : '')
+      + `<dl>${row(T('idLabels.' + (c.client.idType || 'id')), c.client.idNumber)}${row(T('labels.phone'), c.client.phone)}`
       + `${row(T('labels.email'), c.client.email)}${row(T('labels.address'), f.address)}</dl>`;
-    const cur = esc(T('table.currency'));
     const sum = [
-      [T('table.fees'), `<bdi>${money(n.amount)} ${cur}</bdi>`],
-      c.fees.vat !== 'none' ? [T('table.vat'), `<bdi>${money(n.vat)} ${cur}</bdi>`] : null,
-      [T('table.total'), `<bdi>${money(n.total)} ${cur}</bdi>`, true],
-      [T('table.schedule'), esc(t('portal.form.schedules.' + c.fees.schedule, L)) + (c.fees.schedule === 'custom' && f.custom ? ': ' + esc(f.custom) : '')],
+      [T('table.fees'), `<bdi>${cash(n.amount)}</bdi>`],
+      c.fees.vat !== 'none' ? [T('table.vat'), `<bdi>${cash(n.vat)}</bdi>`] : null,
+      [T('table.total'), `<bdi>${cash(n.total)}</bdi>`, true],
+      [T('table.schedule'), c.fees.schedule === 'custom' && custom ? esc(custom) : esc(t('portal.form.schedules.' + c.fees.schedule, L))],
     ].filter(Boolean);
     return { T, clauses, heading, body, partyA, partyB, sum, preamble: fill(esc(T('preamble')), vars) };
   }
@@ -289,9 +334,13 @@
     const sent = (c.events || []).find((e) => e.type === 'sent');
     const sig = c.signature;
     const lab = (k) => per(langs, (L) => t('contract.' + k, L));
+    // bilingual: a heading row like the articles above (English left, Arabic right)
+    const title = langs.length > 1
+      ? `<h3 class="cd-bi-bar" dir="ltr">${span('en', esc(t('contract.signatures', 'en')))}${span('ar', esc(t('contract.signatures', 'ar')))}</h3>`
+      : `<h3>${lab('signatures')}</h3>`;
     return `
   <section class="cd-signs">
-    <h3>${lab('signatures')}</h3>
+    ${title}
     <div class="cd-sign-grid">
       <div class="cd-sign">
         <p class="cd-sign-party">${lab('partyA')}</p>
@@ -299,8 +348,8 @@
       </div>
       <div class="cd-sign">
         <p class="cd-sign-party">${lab('partyB')}</p>
-        ${sig ? `${sig.method === 'drawn' && sig.image ? `<img class="cd-sig-img" src="${esc(sig.image)}" alt="">` : `<p class="cd-sig-typed">${esc(sig.name)}</p>`}
-          <p class="cd-sign-name">${esc(sig.name)}</p>
+        ${sig ? `${sig.method === 'drawn' && sig.image ? `<img class="cd-sig-img" src="${esc(sig.image)}" alt="">` : `<p class="cd-sig-typed" lang="${hasArabic(sig.name) ? 'ar' : 'en'}" dir="auto">${esc(sig.name)}</p>`}
+          <p class="cd-sign-name"><bdi>${esc(sig.name)}</bdi></p>
           <p class="cd-sign-date">${per(langs, (L) => t('contract.signedAt', L) + ' ' + fmtDate(sig.at, L, true))}</p>
           <p class="cd-sign-method">${lab('method.' + sig.method)}</p>` : `<p class="cd-sign-wait">${lab('pending')}</p>`}
       </div>
@@ -320,11 +369,12 @@
     return isBi(c) ? renderBilingual(c) : renderSingle(c);
   }
 
+  // data-demo: the "demo template" notice, repeated across every printed page
   function renderSingle(c) {
     const L = c.lang === 'en' ? 'en' : 'ar';
     const d = docParts(c, L), T = d.T;
     return `
-<article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">
+<article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}" data-demo="${esc(T('demoMark'))}">
   <p class="cd-demo">${esc(T('demoMark'))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${esc(T('firmName'))}</span></div>
@@ -335,36 +385,40 @@
     </dl>
   </header>
   <section class="cd-parties"><div class="cd-party">${d.partyA}</div><div class="cd-party">${d.partyB}</div></section>
+  <h3 class="cd-sec-h">${esc(T('bi.preamble'))}</h3>
   <p class="cd-preamble">${d.preamble}</p>
   <ol class="cd-clauses">
-    ${d.clauses.map((cl, i) => `<li><h4>${esc(d.heading(i, cl.h))}</h4>${d.body(cl)}</li>`).join('')}
+    ${d.clauses.map((cl, i) => { const body = d.body(cl); return `<li${body.length > 900 ? ' class="cd-long"' : ''}><h4>${esc(d.heading(i, cl.h))}</h4>${body}</li>`; }).join('')}
   </ol>
-  <table class="cd-fees"><tbody>
-    ${d.sum.map(([k, v, total]) => `<tr${total ? ' class="cd-total"' : ''}><th scope="row">${esc(k)}</th><td>${v}</td></tr>`).join('')}
-  </tbody></table>
-  ${signsHtml(c, [L])}
+  <div class="cd-close">
+    <table class="cd-fees"><tbody>
+      ${d.sum.map(([k, v, total]) => `<tr${total ? ' class="cd-total"' : ''}><th scope="row">${esc(k)}</th><td>${v}</td></tr>`).join('')}
+    </tbody></table>
+    ${signsHtml(c, [L])}
+  </div>
   ${footHtml(c, [L])}
 </article>`;
   }
 
   function renderBilingual(c) {
-    const A = docParts(c, 'ar'), E = docParts(c, 'en');
+    const terms = !!(fieldsIn(c, 'ar').terms || fieldsIn(c, 'en').terms);
+    const A = docParts(c, 'ar', terms), E = docParts(c, 'en', terms);
     const LL = ['ar', 'en'];
     const cell = (L, html, tag) => `<${tag || 'td'} class="cd-${L}" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">${html}</${tag || 'td'}>`;
     const head = (en, ar) => `<tr class="cd-bi-head">${cell('en', esc(en), 'th')}${cell('ar', esc(ar), 'th')}</tr>`;
-    const pair = (en, ar) => `<tr>${cell('en', en)}${cell('ar', ar)}</tr>`;
+    // a long article (long scope or extra terms) may break across printed pages; shorter ones are kept whole
+    const pair = (en, ar) => `<tr${Math.max(en.length, ar.length) > 900 ? ' class="cd-long"' : ''}>${cell('en', en)}${cell('ar', ar)}</tr>`;
+    const both = (k) => head(t('contract.' + k, 'en'), t('contract.' + k, 'ar'));
     const sum = (d) => `<dl class="cd-sum">${d.sum.map(([k, v, total]) => `<div${total ? ' class="cd-total"' : ''}><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
-    let rows = head(t('contract.bi.parties', 'en'), t('contract.bi.parties', 'ar'))
-      + pair(E.partyA + E.partyB, A.partyA + A.partyB)
-      + pair(`<p>${E.preamble}</p>`, `<p>${A.preamble}</p>`);
+    let rows = both('bi.parties') + pair(E.partyA + E.partyB, A.partyA + A.partyB)
+      + both('bi.preamble') + pair(`<p>${E.preamble}</p>`, `<p>${A.preamble}</p>`);
     const count = Math.max(A.clauses.length, E.clauses.length);
     for (let i = 0; i < count; i++) {
       const ce = E.clauses[i] || {}, ca = A.clauses[i] || {};
       rows += head(E.heading(i, ce.h || ''), A.heading(i, ca.h || '')) + pair(E.body(ce), A.body(ca));
     }
-    rows += head(t('contract.bi.fees', 'en'), t('contract.bi.fees', 'ar')) + pair(sum(E), sum(A));
     return `
-<article class="contract-doc contract-bi" lang="ar" dir="rtl">
+<article class="contract-doc contract-bi" lang="ar" dir="rtl" data-demo="${esc(t('contract.demoMark', 'ar') + '\n' + t('contract.demoMark', 'en'))}">
   <p class="cd-demo">${per(LL, (L) => t('contract.demoMark', L))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${per(LL, (L) => t('contract.firmName', L))}</span></div>
@@ -374,8 +428,11 @@
       <div><dt>${per(LL, (L) => t('contract.date', L))}</dt><dd>${esc(fmtDate(c.createdAt, 'ar'))}<span class="cd-hijri">${esc(fmtHijri(c.createdAt, 'ar'))}</span>${span('en', esc(fmtDate(c.createdAt, 'en')))}</dd></div>
     </dl>
   </header>
-  <table class="cd-bi" dir="ltr"><tbody>${rows}</tbody></table>
-  ${signsHtml(c, LL)}
+  <table class="cd-bi cd-bi-main" dir="ltr"><tbody>${rows}</tbody></table>
+  <div class="cd-close">
+    <table class="cd-bi cd-bi-sum" dir="ltr"><tbody>${both('bi.fees')}${pair(sum(E), sum(A))}</tbody></table>
+    ${signsHtml(c, LL)}
+  </div>
   ${footHtml(c, LL)}
 </article>`;
   }
@@ -384,9 +441,15 @@
   function printContract(c) {
     let root = $('#print-root');
     if (!root) { root = document.createElement('div'); root.id = 'print-root'; document.body.appendChild(root); }
-    root.innerHTML = renderContract(c);
+    // the foot of every page: agreement number and "page / pages" (browsers that support page margin boxes)
+    const no = String(c.id).replace(/[^\w-]/g, '');
+    root.innerHTML = renderContract(c)
+      + `<style>@page { @bottom-center { content: "${no}  ·  " counter(page) " / " counter(pages); font: 8pt "Inter", system-ui, sans-serif; color: #5f6b74; } }</style>`;
+    // the page title becomes the suggested file name of the PDF
+    const title = document.title;
+    document.title = t('contract.title', isBi(c) ? lang() : c.lang === 'en' ? 'en' : 'ar') + ' ' + c.id;
     document.documentElement.classList.add('is-printing');
-    const done = () => { document.documentElement.classList.remove('is-printing'); root.innerHTML = ''; window.removeEventListener('afterprint', done); };
+    const done = () => { document.documentElement.classList.remove('is-printing'); root.innerHTML = ''; document.title = title; window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
     const img = $('img', root);
     const go = () => setTimeout(() => window.print(), 60);
@@ -451,8 +514,9 @@
         return;
       }
       setSession({ email: DEMO_USER.email, role: 'admin', at: Date.now() });
-      const next = new URLSearchParams(location.search).get('next') || '';
-      location.href = 'portal.html' + (/^#\/[\w./-]*$/.test(next) ? next : '');
+      let next = '';
+      try { next = sessionStorage.getItem(NEXT_KEY) || ''; sessionStorage.removeItem(NEXT_KEY); } catch (err) { /* opens the overview */ }
+      location.href = 'portal.html' + (/^#\/[\w./~-]*$/.test(next) ? next : '');
     });
     [email, pass].forEach((el) => el.addEventListener('input', () => { err.hidden = true; [email, pass].forEach((x) => x.removeAttribute('aria-invalid')); }));
   }
@@ -475,7 +539,12 @@
 
   function setupPortal() {
     session = getSession();
-    if (!session) { location.replace('login.html' + (location.hash ? '?next=' + encodeURIComponent(location.hash) : '')); return; }
+    if (!session) {
+      // come back here after signing in; kept in this tab, never in the URL (a confirmation link carries client details)
+      try { if (location.hash) sessionStorage.setItem(NEXT_KEY, location.hash); } catch (e) { /* the overview opens instead */ }
+      location.replace('login.html');
+      return;
+    }
     load();
     // role switch (demo): shows how the menu changes with permissions
     const roleSel = $('[data-role-switch]');
@@ -537,7 +606,7 @@
         save();
         toast(t('portal.receive.done'));
       } else toast(t('portal.receive.already'));
-      history.replaceState(history.state, '', '#/contracts/' + c.id);
+      history.replaceState(history.state, '', '#/contracts/' + ref(c));
       renderNav();
       route();
     } catch (e) {
@@ -595,7 +664,7 @@
         </section>
         <section class="p-card">
           <div class="p-card-head"><h2>${esc(t('portal.overview.activity'))}</h2></div>
-          <ol class="timeline">${activity.map((e) => `<li class="tl-${e.type}"><span class="tl-dot" aria-hidden="true"></span><div><p>${esc(t('portal.events.' + e.type))} · <a href="#/contracts/${esc(e.c.id)}"><bdi dir="ltr">${esc(e.c.id)}</bdi></a></p><time>${esc(fmtDate(e.at, null, true))}</time></div></li>`).join('')}</ol>
+          <ol class="timeline">${activity.map((e) => `<li class="tl-${e.type}"><span class="tl-dot" aria-hidden="true"></span><div><p>${esc(t('portal.events.' + e.type))} · <a href="#/contracts/${esc(ref(e.c))}"><bdi dir="ltr">${esc(e.c.id)}</bdi></a></p><time>${esc(fmtDate(e.at, null, true))}</time></div></li>`).join('')}</ol>
         </section>
       </div>` : `<section class="p-card p-muted-card"><p>${esc(fill(t('portal.denied.text'), { role: t('portal.roles.' + session.role) }))}</p></section>`}`;
   }
@@ -603,11 +672,12 @@
   // one agreement as a row (table on wide screens, card on phones)
   function rowHtml(c) {
     const n = feeNumbers(c);
-    return `<li><a class="c-row" href="#/contracts/${esc(c.id)}">
+    const nm = namesIn(c, lang());
+    return `<li><a class="c-row" href="#/contracts/${esc(ref(c))}">
       <span class="c-no"><bdi dir="ltr">${esc(c.id)}</bdi></span>
-      <span class="c-client">${esc(c.client.name)}</span>
-      <span class="c-matter">${esc(c.matter.title)}</span>
-      <span class="c-fees"><bdi>${money(n.total)} ${esc(t('contract.table.currency'))}</bdi></span>
+      <span class="c-client">${esc(nm.clientName)}</span>
+      <span class="c-matter">${esc(nm.title)}</span>
+      <span class="c-fees"><bdi>${esc(fill(t('portal.money'), { n: money(n.total) }))}</bdi></span>
       <span class="c-status">${statusChip(c.status)}</span>
       <span class="c-date">${esc(fmtDate(c.updatedAt))}</span>
     </a></li>`;
@@ -638,7 +708,9 @@
   function fillContractList() {
     const list = load().slice().sort((a, b) => b.updatedAt - a.updatedAt);
     const q = toLatin(query).trim().toLowerCase();
-    const shown = list.filter((c) => (filter === 'all' || c.status === filter) && (!q || (c.client.name + ' ' + c.id + ' ' + c.matter.title).toLowerCase().includes(q)));
+    // a bilingual agreement can be found by its English names too
+    const hay = (c) => toLatin([c.id, c.client.name, c.matter.title].concat(isBi(c) && c.en ? [c.en.clientName, c.en.title] : []).join(' ')).toLowerCase();
+    const shown = list.filter((c) => (filter === 'all' || c.status === filter) && (!q || hay(c).includes(q)));
     $('[data-contract-list]').innerHTML = shown.length ? shown.map(rowHtml).join('') : `<li class="p-muted c-empty">${esc(t('portal.contracts.empty'))}</li>`;
     $$('[data-filter]').forEach((b) => {
       const f = b.dataset.filter;
@@ -648,19 +720,35 @@
   }
 
   // ----- new / edit form -----
+  // the form's English fields, in the fixed EN_KEYS order of a bilingual agreement
+  const EN_FIELDS = { clientName: 'clientNameEn', address: 'addressEn', title: 'matterTitleEn', scope: 'scopeEn', custom: 'customEn', duration: 'durationEn', city: 'cityEn', terms: 'termsEn' };
+  // each text field and its English counterpart
+  const PAIRS = [['clientName', 'clientNameEn'], ['repName', 'repNameEn'], ['repCapacity', 'repCapacityEn'], ['address', 'addressEn'], ['matterTitle', 'matterTitleEn'],
+    ['scope', 'scopeEn'], ['custom', 'customEn'], ['duration', 'durationEn'], ['city', 'cityEn'], ['terms', 'termsEn']];
   function viewForm(c) {
     const F = (k) => esc(t('portal.form.' + k));
     const v = c || { lang: lang(), lawyer: 'khalid', client: { idType: 'id' }, matter: { area: (S.practiceAreas && S.practiceAreas[0] && S.practiceAreas[0].id) || 'commercial' }, fees: { vat: 'excl', schedule: 'two' }, city: '' };
     const bi = v.lang === 'both';
-    // opts.en: the English counterpart of a field, shown only for a bilingual agreement; opts.custom: payment details
-    const field = (name, label, value, opts = {}) => `
-      <div class="field${opts.full ? ' field-full' : ''}${opts.en ? ' field-en' : ''}"${opts.en ? ' data-en' : ''}${opts.custom ? ' data-custom-field' : ''}${(opts.en && !bi) || (opts.custom && v.fees.schedule !== 'custom') ? ' hidden' : ''}>
-        <label for="cf-${name}">${label}${opts.en ? ' <span class="lang-tag" lang="en">EN</span>' : ''}${opts.optional ? ` <span class="optional">${F('optional')}</span>` : ' <span class="req" aria-hidden="true">*</span>'}</label>
+    // the main text fields are written in the agreement's own language: Arabic, or English for an English-only agreement
+    const primary = v.lang === 'en' ? 'en' : 'ar';
+    /* opts.base: a main text field (Arabic, or English for an English-only agreement), tagged AR when bilingual;
+       opts.en: its English counterpart, shown only for a bilingual agreement; opts.custom: payment details;
+       opts.rep: a company's representative; opts.phKey: placeholder text, in the field's own language */
+    const field = (name, label, value, opts = {}) => {
+      const hidden = (opts.en && !bi) || (opts.custom && v.fees.schedule !== 'custom') || (opts.rep && v.client.idType !== 'cr');
+      const textLang = opts.en ? ' dir="ltr" lang="en"' : opts.base ? ` dir="${primary === 'ar' ? 'rtl' : 'ltr'}" lang="${primary}" data-base` : opts.ltr ? ' dir="ltr"' : '';
+      const ph = opts.phKey ? esc(t('portal.form.' + opts.phKey, opts.en ? 'en' : primary)) : (opts.ph || '');
+      const attrs = `${textLang}${opts.phKey ? ` data-ph="${opts.phKey}"` : ''} placeholder="${ph}" aria-describedby="cf-${name}-err${opts.hint ? ` cf-${name}-hint` : ''}"`;
+      return `
+      <div class="field${opts.full ? ' field-full' : ''}${opts.en ? ' field-en' : ''}"${opts.en ? ' data-en' : ''}${opts.custom ? ' data-custom-field' : ''}${opts.rep ? ' data-rep-field' : ''}${hidden ? ' hidden' : ''}>
+        <label for="cf-${name}">${label}${opts.en ? ' <span class="lang-tag" lang="en">EN</span>' : ''}${opts.base ? ` <span class="lang-tag" data-ar-tag${bi ? '' : ' hidden'}>${F('arTag')}</span>` : ''}${opts.optional ? ` <span class="optional">${F('optional')}</span>` : ' <span class="req" aria-hidden="true">*</span>'}</label>
         ${opts.textarea
-          ? `<textarea class="input" id="cf-${name}" name="${name}" rows="${opts.rows || 3}"${opts.en ? ' dir="ltr" lang="en"' : ''} placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">${esc(value)}</textarea>`
-          : `<input class="input${opts.ltr ? ' input-ltr' : ''}" id="cf-${name}" name="${name}" type="${opts.type || 'text'}"${opts.ltr || opts.en ? ' dir="ltr"' : ''}${opts.en ? ' lang="en"' : ''}${opts.inputmode ? ` inputmode="${opts.inputmode}"` : ''} value="${esc(value)}" placeholder="${opts.ph || ''}" aria-describedby="cf-${name}-err">`}
+          ? `<textarea class="input" id="cf-${name}" name="${name}" rows="${opts.rows || 3}"${attrs}>${esc(value)}</textarea>`
+          : `<input class="input${opts.ltr ? ' input-ltr' : ''}" id="cf-${name}" name="${name}" type="${opts.type || 'text'}"${opts.inputmode ? ` inputmode="${opts.inputmode}"` : ''} value="${esc(value)}"${attrs}>`}
+        ${opts.hint ? `<p class="field-hint" id="cf-${name}-hint">${opts.hint}</p>` : ''}
         <p class="field-error" id="cf-${name}-err" hidden></p>
       </div>`;
+    };
     const en = v.en || {};
     const select = (name, label, value, options) => `
       <div class="field">
@@ -669,10 +757,11 @@
       </div>`;
     const areas = (S.practiceAreas || []).map((a) => [a.id, t('practice.areas.' + a.id + '.title')]).concat([['other', t('portal.form.areaOther')]]);
     const langSelectHtml = select('lang', F('lang'), v.lang, [['ar', t('portal.form.langs.ar')], ['en', t('portal.form.langs.en')], ['both', t('portal.form.langs.both')]]);
-    const lawyers = (S.team || []).filter((m) => m.group === 'partners').map((m) => [m.id, t('team.members.' + m.id + '.name')]);
+    const lawyers = (S.team || []).filter((m) => m.group === 'partners').map((m) => [m.id, t('team.members.' + m.id + '.name') + ' — ' + t('team.members.' + m.id + '.role')]);
+    const back = c ? '#/contracts/' + esc(ref(c)) : '#/contracts';
     return `
       <header class="p-head">
-        <div><a class="link-arrow p-back" href="${c ? '#/contracts/' + esc(c.id) : '#/contracts'}">${icon('arrow').replace('class="icon"', 'class="icon icon-back"')}<span>${esc(t('portal.detail.back'))}</span></a>
+        <div><a class="link-arrow p-back" href="${back}">${icon('arrow').replace('class="icon"', 'class="icon icon-back"')}<span>${esc(t('portal.detail.back'))}</span></a>
         <h1>${F(c ? 'titleEdit' : 'titleNew')}</h1>${c ? `<p><bdi dir="ltr">${esc(c.id)}</bdi></p>` : ''}</div>
       </header>
       <form class="p-form" data-contract-form novalidate>
@@ -685,13 +774,17 @@
         <section class="p-card">
           <h2>${F('client')}</h2>
           <div class="form-grid">
-            ${field('clientName', F('clientName'), v.client.name, { full: true })}
+            ${field('clientName', F('clientName'), v.client.name, { full: true, base: true })}
             ${field('clientNameEn', F('clientName'), en.clientName, { full: true, en: true, optional: true })}
             ${select('idType', F('idType'), v.client.idType, Object.keys(t('portal.form.idTypes')).map((k) => [k, t('portal.form.idTypes.' + k)]))}
             ${field('idNumber', F('idNumber'), v.client.idNumber, { ltr: true, inputmode: 'numeric' })}
+            ${field('repName', F('repName'), v.client.rep, { rep: true, base: true })}
+            ${field('repNameEn', F('repName'), en.rep, { rep: true, en: true, optional: true })}
+            ${field('repCapacity', F('repCapacity'), v.client.repCapacity, { rep: true, base: true, phKey: 'repCapacityPh' })}
+            ${field('repCapacityEn', F('repCapacity'), en.repCapacity, { rep: true, en: true, phKey: 'repCapacityPh' })}
             ${field('phone', F('phone'), v.client.phone, { ltr: true, type: 'tel', inputmode: 'tel', ph: '05XXXXXXXX' })}
             ${field('email', F('email'), v.client.email, { ltr: true, type: 'email', optional: true, ph: 'name@example.com' })}
-            ${field('address', F('address'), v.client.address, { full: true, optional: true })}
+            ${field('address', F('address'), v.client.address, { full: true, optional: true, base: true })}
             ${field('addressEn', F('address'), en.address, { full: true, en: true, optional: true })}
           </div>
         </section>
@@ -699,10 +792,10 @@
           <h2>${F('matter')}</h2>
           <div class="form-grid">
             ${select('area', F('area'), v.matter.area, areas)}
-            ${field('matterTitle', F('matterTitle'), v.matter.title, { ph: F('matterTitlePh') })}
-            ${field('matterTitleEn', F('matterTitle'), en.title, { full: true, en: true, ph: esc(t('portal.form.matterTitlePh', 'en')) })}
-            ${field('scope', F('scope'), v.matter.scope, { full: true, textarea: true, rows: 4, ph: F('scopePh') })}
-            ${field('scopeEn', F('scope'), en.scope, { full: true, textarea: true, rows: 4, en: true, ph: esc(t('portal.form.scopePh', 'en')) })}
+            ${field('matterTitle', F('matterTitle'), v.matter.title, { base: true, phKey: 'matterTitlePh' })}
+            ${field('matterTitleEn', F('matterTitle'), en.title, { full: true, en: true, phKey: 'matterTitlePh' })}
+            ${field('scope', F('scope'), v.matter.scope, { full: true, textarea: true, rows: 4, base: true, phKey: 'scopePh' })}
+            ${field('scopeEn', F('scope'), en.scope, { full: true, textarea: true, rows: 4, en: true, phKey: 'scopePh' })}
           </div>
         </section>
         <section class="p-card">
@@ -711,8 +804,8 @@
             ${field('amount', F('amount'), v.fees.amount, { ltr: true, inputmode: 'decimal', ph: '0' })}
             ${select('vat', F('vat'), v.fees.vat, ['excl', 'incl', 'none'].map((k) => [k, t('portal.form.vats.' + k)]))}
             ${select('schedule', F('schedule'), v.fees.schedule, ['full', 'two', 'custom'].map((k) => [k, t('portal.form.schedules.' + k)]))}
-            ${field('custom', F('custom'), v.fees.custom, { custom: true, optional: true, ph: F('customPh') })}
-            ${field('customEn', F('custom'), en.custom, { custom: true, en: true, optional: true, ph: esc(t('portal.form.customPh', 'en')) })}
+            ${field('custom', F('custom'), v.fees.custom, { custom: true, base: true, phKey: 'customPh' })}
+            ${field('customEn', F('custom'), en.custom, { custom: true, en: true, phKey: 'customPh' })}
             <p class="p-total field-full" data-fee-total aria-live="polite"></p>
           </div>
         </section>
@@ -720,31 +813,37 @@
           <h2>${F('other')}</h2>
           <div class="form-grid">
             ${select('lawyer', F('lawyer'), v.lawyer, lawyers)}
-            ${field('duration', F('duration'), v.duration, { optional: true, ph: F('durationDefault') })}
-            ${field('durationEn', F('duration'), en.duration, { en: true, optional: true, ph: esc(t('portal.form.durationDefault', 'en')) })}
-            ${field('city', F('city'), v.city, { optional: true, ph: F('cityDefault') })}
-            ${field('cityEn', F('city'), en.city, { en: true, optional: true, ph: esc(t('portal.form.cityDefault', 'en')) })}
-            ${field('terms', F('terms'), v.terms, { full: true, textarea: true, rows: 3, optional: true, ph: F('termsPh') })}
-            ${field('termsEn', F('terms'), en.terms, { full: true, textarea: true, rows: 3, en: true, optional: true, ph: esc(t('portal.form.termsPh', 'en')) })}
+            ${field('duration', F('duration'), v.duration, { optional: true, base: true, phKey: 'durationPh', hint: F('durationHint') })}
+            ${field('durationEn', F('duration'), en.duration, { en: true, optional: true, phKey: 'durationPh' })}
+            ${field('city', F('city'), v.city, { optional: true, base: true, phKey: 'cityDefault' })}
+            ${field('cityEn', F('city'), en.city, { en: true, optional: true, phKey: 'cityDefault' })}
+            ${field('terms', F('terms'), v.terms, { full: true, textarea: true, rows: 3, optional: true, base: true, phKey: 'termsPh' })}
+            ${field('termsEn', F('terms'), en.terms, { full: true, textarea: true, rows: 3, en: true, optional: true, phKey: 'termsPh' })}
           </div>
         </section>
         <div class="p-form-actions">
           <button class="btn btn-primary btn-lg" type="submit" data-intent="preview">${icon('eye')}<span>${F('preview')}</span></button>
           <button class="btn btn-ghost btn-lg" type="submit" data-intent="draft">${icon('edit')}<span>${F('saveDraft')}</span></button>
-          <a class="btn-text p-cancel" href="${c ? '#/contracts/' + esc(c.id) : '#/contracts'}">${F('cancel')}</a>
+          <a class="btn-text p-cancel" href="${back}">${F('cancel')}</a>
         </div>
       </form>`;
   }
 
   function bindForm(existing) {
     const form = $('[data-contract-form]');
-    const val = (n) => (form.elements[n] ? form.elements[n].value.trim() : '');
+    const el = (n) => form.elements[n];
+    const val = (n) => (el(n) ? el(n).value.trim() : '');
+    const shown = (n) => !!el(n) && !el(n).closest('[hidden]');
     const showTotal = () => {
       const amount = parseFloat(toLatin(val('amount')).replace(/,/g, ''));
       const out = $('[data-fee-total]');
       if (!amount || amount <= 0) { out.textContent = ''; return; }
       const n = feeNumbers({ fees: { amount, vat: val('vat') } });
-      out.innerHTML = `${esc(t('portal.form.total'))}: <strong><bdi>${money(n.total)} ${esc(t('contract.table.currency'))}</bdi></strong>`;
+      out.innerHTML = `${esc(t('portal.form.total'))}: <strong><bdi>${esc(fill(t('portal.money'), { n: money(n.total) }))}</bdi></strong>`;
+    };
+    const clearErrors = () => {
+      $$('.field-error', form).forEach((p) => { p.hidden = true; });
+      $$('[aria-invalid]', form).forEach((x) => x.removeAttribute('aria-invalid'));
     };
     form.addEventListener('input', (e) => {
       showTotal();
@@ -754,14 +853,31 @@
         if (p) p.hidden = true;
       }
     });
+    let primary = val('lang') === 'en' ? 'en' : 'ar';
     const syncFields = () => {
-      const both = val('lang') === 'both', custom = val('schedule') === 'custom';
-      $$('[data-en], [data-custom-field]', form).forEach((el) => {
-        el.hidden = (el.hasAttribute('data-en') && !both) || (el.hasAttribute('data-custom-field') && !custom);
+      const both = val('lang') === 'both', custom = val('schedule') === 'custom', cr = val('idType') === 'cr';
+      $$('[data-en], [data-custom-field], [data-rep-field]', form).forEach((box) => {
+        box.hidden = (box.hasAttribute('data-en') && !both) || (box.hasAttribute('data-custom-field') && !custom) || (box.hasAttribute('data-rep-field') && !cr);
       });
+      $$('[data-base]', form).forEach((inp) => {
+        inp.dir = primary === 'ar' ? 'rtl' : 'ltr';
+        inp.lang = primary;
+        if (inp.dataset.ph) inp.placeholder = t('portal.form.' + inp.dataset.ph, primary);
+      });
+      $$('[data-ar-tag]', form).forEach((tag) => { tag.hidden = !both; });
     };
     form.addEventListener('change', (e) => {
-      if (e.target.name === 'schedule' || e.target.name === 'lang') syncFields();
+      if (e.target.name === 'lang') {
+        // switching to or from English-only swaps each text with its counterpart, so nothing typed is lost:
+        // the main fields then hold the agreement's own language, and the other language waits in the EN fields
+        const next = val('lang') === 'en' ? 'en' : 'ar';
+        if (next !== primary) {
+          PAIRS.forEach(([a, b]) => { if (el(a) && el(b)) { const keep = el(a).value; el(a).value = el(b).value; el(b).value = keep; } });
+          primary = next;
+        }
+        clearErrors();
+      }
+      if (['schedule', 'lang', 'idType'].includes(e.target.name)) syncFields();
       showTotal();
     });
     syncFields();
@@ -771,7 +887,8 @@
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const errors = {};
-      ['clientName', 'idNumber', 'phone', 'matterTitle', 'scope', 'amount'].forEach((n) => { if (!val(n)) errors[n] = t('portal.form.errors.required'); });
+      const need = (n) => { if (shown(n) && !val(n)) errors[n] = t('portal.form.errors.required'); };
+      ['clientName', 'idNumber', 'repName', 'repCapacity', 'phone', 'matterTitle', 'scope', 'amount', 'custom'].forEach(need);
       const phone = toLatin(val('phone')).replace(/[\s-]/g, '');
       if (phone && !/^(\+?966|00966|0)?5\d{8}$/.test(phone) && !/^\+?\d{9,15}$/.test(phone)) errors.phone = t('portal.form.errors.phone');
       if (val('email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) errors.email = t('portal.form.errors.email');
@@ -779,35 +896,46 @@
       if (val('amount') && !(amount > 0)) errors.amount = t('portal.form.errors.amount');
       const both = val('lang') === 'both';
       if (both) {
-        // the English column needs its own text wherever the Arabic has some
-        ['matterTitleEn', 'scopeEn'].forEach((n) => { if (!val(n)) errors[n] = t('portal.form.errors.required'); });
-        [['duration', 'durationEn'], ['city', 'cityEn'], ['terms', 'termsEn']].forEach(([ar, n]) => { if (val(ar) && !val(n)) errors[n] = t('portal.form.errors.englishToo'); });
-        if (val('schedule') === 'custom' && val('custom') && !val('customEn')) errors.customEn = t('portal.form.errors.englishToo');
+        ['matterTitleEn', 'scopeEn', 'repCapacityEn', 'customEn'].forEach(need);
+        // a text in one language needs its counterpart in the other, so the two columns always say the same
+        [['address', 'addressEn'], ['duration', 'durationEn'], ['city', 'cityEn'], ['terms', 'termsEn']].forEach(([ar, n]) => {
+          if (val(ar) && !val(n)) errors[n] = t('portal.form.errors.englishToo');
+          if (!val(ar) && val(n)) errors[ar] = t('portal.form.errors.arabicToo');
+        });
+        // and each column in its own language (names and addresses may be written in Latin letters)
+        PAIRS.forEach(([ar, n]) => {
+          if (!['clientName', 'repName', 'address'].includes(ar) && shown(ar) && val(ar) && !errors[ar] && !hasArabic(val(ar))) errors[ar] = t('portal.form.errors.arabicOnly');
+          if (shown(n) && val(n) && !errors[n] && hasArabic(val(n)) && !/[A-Za-z]/.test(val(n))) errors[n] = t('portal.form.errors.englishOnly');
+        });
       }
-      $$('.field-error', form).forEach((p) => { p.hidden = true; });
-      $$('[aria-invalid]', form).forEach((el) => el.removeAttribute('aria-invalid'));
+      clearErrors();
       const bad = Object.keys(errors);
       if (bad.length) {
-        bad.forEach((n) => { const el = form.elements[n]; const p = $('#cf-' + n + '-err'); el.setAttribute('aria-invalid', 'true'); p.textContent = errors[n]; p.hidden = false; });
-        form.elements[bad[0]].focus();
+        bad.forEach((n) => { const p = $('#cf-' + n + '-err'); el(n).setAttribute('aria-invalid', 'true'); p.textContent = errors[n]; p.hidden = false; });
+        $$('[aria-invalid="true"]', form)[0].focus();   // the first one on the page
         return;
       }
       const now = Date.now();
       const c = existing || { id: nextId(), status: 'draft', createdAt: now, events: [{ type: 'created', at: now }] };
+      const cr = val('idType') === 'cr';
+      const client = { name: val('clientName'), idType: val('idType'), idNumber: toLatin(val('idNumber')), phone, email: val('email'), address: val('address') };
+      if (cr) Object.assign(client, { rep: val('repName'), repCapacity: val('repCapacity') });
+      // English counterparts in the fixed EN_KEYS order, then a company's representative. Kept for every language,
+      // so switching a draft to one language and back loses nothing (only a bilingual agreement uses them).
+      const en = {};
+      EN_KEYS.forEach((k) => { en[k] = val(EN_FIELDS[k]); });
+      if (cr) Object.assign(en, { rep: val('repNameEn'), repCapacity: val('repCapacityEn') });
       Object.assign(c, {
-        lang: val('lang'), lawyer: val('lawyer'), updatedAt: now,
-        client: { name: val('clientName'), idType: val('idType'), idNumber: toLatin(val('idNumber')), phone, email: val('email'), address: val('address') },
+        lang: val('lang'), lawyer: val('lawyer'), updatedAt: now, client,
         matter: { area: val('area'), title: val('matterTitle'), scope: val('scope') },
         fees: { amount, vat: val('vat'), schedule: val('schedule'), custom: val('custom') },
         duration: val('duration'), city: val('city'), terms: val('terms'),
-        // English counterparts, in the fixed EN_KEYS order
-        en: both ? { clientName: val('clientNameEn'), address: val('addressEn'), title: val('matterTitleEn'), scope: val('scopeEn'), custom: val('customEn'), duration: val('durationEn'), city: val('cityEn'), terms: val('termsEn') } : undefined,
       });
-      if (!both) delete c.en;
+      if (both || Object.keys(en).some((k) => en[k])) c.en = en; else delete c.en;
       if (!existing) load().push(c);
       save();
       toast(t('portal.form.saved'));
-      location.hash = intent === 'draft' ? '#/contracts' : '#/contracts/' + c.id;
+      location.hash = intent === 'draft' ? '#/contracts' : '#/contracts/' + ref(c);
     });
   }
 
@@ -816,12 +944,13 @@
     if (!c) return `<section class="p-empty">${icon('doc')}<h1>${esc(t('portal.detail.notFound'))}</h1><a class="btn btn-ghost" href="#/contracts">${esc(t('portal.detail.back'))}</a></section>`;
     const D = (k) => esc(t('portal.detail.' + k));
     const note = c.status === 'draft' ? D('draftNote') : c.status === 'sent' ? D('sentNote') : D('signedCopy');
+    const nm = namesIn(c, lang());
     return `
       <header class="p-head">
         <div><a class="link-arrow p-back" href="#/contracts">${icon('arrow').replace('class="icon"', 'class="icon icon-back"')}<span>${D('back')}</span></a>
-        <h1><bdi dir="ltr">${esc(c.id)}</bdi> ${statusChip(c.status)}</h1><p>${esc(c.client.name)} · ${esc(c.matter.title)}</p></div>
+        <h1><bdi dir="ltr">${esc(c.id)}</bdi> ${statusChip(c.status)}</h1><p>${esc(nm.clientName)} · ${esc(nm.title)}</p></div>
       </header>
-      <div class="p-detail">
+      <div class="p-detail${isBi(c) ? ' p-detail-bi' : ''}">
         <div class="p-doc-wrap" data-doc>${renderContract(c)}</div>
         <aside class="p-side">
           <section class="p-card">
@@ -830,7 +959,7 @@
             <div class="p-actions">
               ${c.status === 'draft' && can('contractsSend') ? `<button class="btn btn-primary btn-block" type="button" data-act="send">${icon('send')}<span>${D('send')}</span></button>` : ''}
               ${c.status === 'sent' && can('contractsSend') ? `<button class="btn btn-primary btn-block" type="button" data-act="link">${icon('send')}<span>${D('resend')}</span></button>` : ''}
-              ${c.status === 'draft' && can('contractsCreate') ? `<a class="btn btn-ghost btn-block" href="#/contracts/${esc(c.id)}/edit">${icon('edit')}<span>${D('edit')}</span></a>` : ''}
+              ${c.status === 'draft' && can('contractsCreate') ? `<a class="btn btn-ghost btn-block" href="#/contracts/${esc(ref(c))}/edit">${icon('edit')}<span>${D('edit')}</span></a>` : ''}
               <button class="btn btn-ghost btn-block" type="button" data-act="print">${icon('print')}<span>${D('print')}</span></button>
               ${c.status === 'draft' && can('contractsDelete') ? `<button class="btn-text p-delete" type="button" data-act="delete">${icon('trash')}<span>${D('delete')}</span></button>` : ''}
             </div>
@@ -847,7 +976,7 @@
   function sendModal(c) {
     const P = (k) => esc(t('portal.send.' + k));
     const link = signLink(c);
-    const msg = fill(t('portal.send.message'), { client: c.client.name, no: c.id, link });
+    const msg = fill(t('portal.send.message'), { client: namesIn(c, lang()).clientName, no: c.id, link });
     const waPhone = toLatin(c.client.phone).replace(/^0/, '966').replace(/\D/g, '');
     openModal(`
       <h2 id="modal-title">${P('title')}</h2>
@@ -917,22 +1046,25 @@
       $('[data-search]').addEventListener('input', (e) => { query = e.target.value; fillContractList(); });
     }
     if (section === 'contracts' && $('[data-contract-form]')) bindForm(id && id !== 'new' ? find(id) : null);
-    if (section === 'contracts' && id && !sub && find(id)) {
-      const c = find(id);
-      if (c.status !== 'draft' && !c.hash) ensureHash(c).then(() => { if (location.hash === '#/contracts/' + c.id) route(); });
+    const c = section === 'contracts' && id && id !== 'new' && !sub ? find(id) : null;
+    if (c) {
+      const here = location.hash;
+      if (c.status !== 'draft' && !c.hash) ensureHash(c).then(() => { if (location.hash === here) route(); });
       $$('[data-act]').forEach((b) => b.addEventListener('click', async () => {
         const act = b.dataset.act;
         if (act === 'print') printContract(c);
         if (act === 'link') sendModal(c);
         if (act === 'delete' && confirm(t('portal.detail.deleteConfirm'))) {
-          contracts = load().filter((x) => x.id !== c.id); save(); toast(t('portal.detail.deleted')); location.hash = '#/contracts';
+          contracts = load().filter((x) => x !== c); save(); toast(t('portal.detail.deleted')); location.hash = '#/contracts';
         }
         if (act === 'send') {
           // approval freezes the text: the fingerprint is taken now and the draft can no longer be edited
           c.status = 'sent'; c.token = c.token || randomToken(); c.updatedAt = Date.now();
           c.events.push({ type: 'sent', at: c.updatedAt });
           c.hash = await sha256(contractBody(c));
-          save(); route(); sendModal(c);
+          save();
+          history.replaceState(history.state, '', '#/contracts/' + ref(c));   // a sent copy is named by its token if the number clashes
+          route(); sendModal(c);
         }
       }));
     }
@@ -1008,7 +1140,7 @@
       box.innerHTML = `
         <section class="sign-intro">
           <p class="eyebrow"><span>${esc(t('sign.title'))}</span></p>
-          <h1>${esc(fill(t('sign.hello'), { client: c.client.name }))}</h1>
+          <h1>${esc(fill(t('sign.hello'), { client: namesIn(c, lang()).clientName }))}</h1>
           <p>${esc(t('sign.intro'))}</p>
         </section>
         ${signed ? `<section class="sign-done" tabindex="-1" data-done>${icon('check-circle')}<div><h2>${esc(t(justSigned ? 'sign.doneTitle' : 'sign.signedTitle'))}</h2>${justSigned ? `<p>${esc(t('sign.doneText'))}</p>` : ''}
@@ -1046,12 +1178,14 @@
 
     function signForm() {
       const G = (k) => esc(t('sign.' + k));
+      // a bilingual agreement: the consent the client gives is shown in both languages (the page's language first)
+      const consent = isBi(c) ? [lang(), lang() === 'ar' ? 'en' : 'ar'].map((L) => span(L, esc(t('sign.consent', L)))).join('') : G('consent');
       return `
       <form class="sign-form p-card" data-sign-form novalidate>
         <h2>${G('signTitle')}</h2>
         <div class="field">
           <label for="s-name">${G('fullName')} <span class="req" aria-hidden="true">*</span></label>
-          <input class="input" id="s-name" name="name" autocomplete="name" data-enter-blur required value="${esc(c.client.name.replace(/\s*\(.*\)$/, ''))}" aria-describedby="s-name-err">
+          <input class="input" id="s-name" name="name" autocomplete="name" data-enter-blur required value="${esc((c.client.rep || c.client.name).replace(/\s*\(.*\)$/, ''))}" aria-describedby="s-name-err">
           <p class="field-error" id="s-name-err" hidden></p>
         </div>
         <div class="sig-tabs" role="tablist">
@@ -1067,7 +1201,7 @@
           <p class="p-muted">${G('typedHint')}</p>
         </div>
         <p class="field-error" id="s-sig-err" hidden></p>
-        <label class="check"><input type="checkbox" id="s-consent" name="consent" required aria-describedby="s-consent-err"><span>${G('consent')}</span></label>
+        <label class="check"><input type="checkbox" id="s-consent" name="consent" required aria-describedby="s-consent-err"><span>${consent}</span></label>
         <p class="field-error" id="s-consent-err" hidden></p>
         <div class="sign-otp" data-otp hidden>
           <h3>${G('otpTitle')}</h3>

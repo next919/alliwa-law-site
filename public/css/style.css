@@ -1487,6 +1487,8 @@ html[data-theme="dark"] .choice input:checked + span { border-color: var(--silve
 .check { display: flex !important; align-items: flex-start; gap: .75rem; font-weight: 500 !important; color: var(--ink-700) !important; line-height: 1.6; cursor: pointer; }
 .check input { flex: none; width: 22px; height: 22px; margin: .2em 0 0; accent-color: var(--char-800); cursor: pointer; }
 html[data-theme="dark"] .check input { accent-color: var(--silver-500); }
+.check .cd-l { display: block; }
+.check .cd-l + .cd-l { margin-top: .3rem; font-size: .92em; }
 
 .field-error {
   display: flex;
@@ -2189,7 +2191,8 @@ html[data-theme="dark"] .p-filter[aria-pressed="true"] .p-count { color: var(--c
 .p-form-actions .btn { flex: 1 1 200px; }
 .p-cancel { display: inline-flex; align-items: center; min-height: 44px; padding-inline: .5rem; }
 @media (min-width: 640px) { .p-form-actions .btn { flex: 0 0 auto; } }
-[data-custom-field][hidden], .field-en[hidden], .p-both-hint[hidden] { display: none; }
+[data-custom-field][hidden], [data-rep-field][hidden], .field-en[hidden], .p-both-hint[hidden], .lang-tag[hidden] { display: none; }
+.field-hint { margin: .35rem 0 0; color: var(--ink-500); font-size: .82rem; line-height: 1.6; }
 .lang-tag {
   display: inline-block;
   margin-inline-start: .3rem;
@@ -2207,7 +2210,7 @@ html[data-theme="dark"] .p-filter[aria-pressed="true"] .p-count { color: var(--c
 
 /* one agreement */
 .p-detail { display: grid; gap: 1.25rem; }
-.p-side { display: grid; gap: 1rem; align-content: start; }
+.p-side { display: grid; gap: 1rem; align-content: start; width: 100%; max-width: 820px; margin-inline: auto; }  /* under the sheet: same width as the sheet */
 .p-actions { display: grid; gap: .6rem; }
 .p-note { margin: 0 0 1rem; padding: .7rem .85rem; border-radius: var(--radius-sm); background: var(--paper-100); color: var(--ink-700); font-size: .9rem; line-height: 1.7; }
 .p-note-signed { background: #e3f3ea; color: #1b6340; }
@@ -2217,6 +2220,10 @@ html[data-theme="dark"] .p-note-signed { background: rgb(111 208 154 / .12); col
 @media (min-width: 1080px) {
   .p-detail { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
   .p-side { position: sticky; top: calc(var(--header-h) + 1rem); }
+}
+@media (min-width: 1080px) and (max-width: 1499.98px) {
+  .p-detail-bi { grid-template-columns: minmax(0, 1fr); }
+  .p-detail-bi .p-side { position: static; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
 }
 
 /* history */
@@ -2351,17 +2358,21 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-party dt { color: var(--doc-muted); }
 .cd-party dt::after { content: ":"; }
 .cd-party dd { margin: 0; }
+.cd-party dl div > *, .cd-bi dl div > * { min-width: 0; }
+.cd-party dd, .cd-bi dt, .cd-bi dd { overflow-wrap: anywhere; }
 .cd-preamble { margin: 1.25rem 0 !important; }
+.cd-sec-h { margin: 1.25rem 0 .15rem; font-size: 1rem; }
+.cd-sec-h + .cd-preamble { margin-top: 0 !important; }
 .cd-clauses > li { margin-bottom: .9rem; }
 .cd-clauses h4 { margin: 0 0 .15rem; font-size: 1rem; }
 /* numbered points inside an article: Arabic-Indic digits in Arabic, 1. 2. 3. in English */
 .cd-items { margin: .15rem 0 .35rem; padding-inline-start: 1.5rem; }
 .cd-items li { margin-bottom: .15rem; padding-inline-start: .2rem; }
-[lang="ar"] .cd-items, .cd-items[lang="ar"] { list-style: arabic-indic; }
-[lang="en"] .cd-items { list-style: decimal; }
+.cd-items:lang(ar) { list-style: arabic-indic; }
+.cd-items:lang(en) { list-style: decimal; }
 
 /* the firm's emblem as a faint watermark behind the text (also in print) */
-.contract-doc { position: relative; isolation: isolate; }
+.contract-doc { position: relative; isolation: isolate; container-type: inline-size; }
 .contract-doc::before {
   content: "";
   position: absolute;
@@ -2409,7 +2420,38 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-sum div { justify-content: space-between; padding-block: .15rem; border-bottom: 1px dotted var(--doc-line); }
 .cd-sum div:last-child { border-bottom: 0; }
 .cd-sum .cd-total dt, .cd-sum .cd-total dd { color: var(--char-900); font-weight: 700; }
-/* phones: the two columns would be too narrow, so each article shows its Arabic, then its English */
+.cd-bi-main { margin-bottom: 0; }
+.cd-bi-sum { margin-top: -1px; }
+.cd-bi-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .25rem 1rem;
+  margin: 0 0 .9rem !important;
+  padding: .55rem .9rem;
+  background: var(--char-700);
+  color: #fff !important;
+  font-size: .85rem !important;
+  line-height: 1.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.cd-bi-bar .cd-l[lang="en"] { font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; }
+.contract-bi .cd-sign, .contract-bi .cd-sign .cd-l, .contract-bi .cd-foot, .contract-bi .cd-foot .cd-l { text-align: center; }
+.contract-bi .cd-sig-img { margin-inline: auto; }
+/* a narrow sheet (phones, or a narrow column): the two columns would be too tight, so each article shows its
+   Arabic, then its English. The sheet's own width decides; the viewport query covers browsers without container queries. */
+@container (max-width: 600px) {
+  .cd-bi, .cd-bi tbody { display: block; }
+  .cd-bi tr { display: flex; flex-direction: column; }
+  .cd-bi th, .cd-bi td { width: auto; }
+  .cd-bi .cd-ar { order: -1; }
+  .cd-bi td.cd-en { border-top-style: dashed; }
+  .cd-bi-head th.cd-en { padding-top: 0; border-top: 0; }
+  .cd-bi-head th.cd-ar { padding-bottom: .15rem; border-bottom: 0; }
+  .cd-bi-bar { flex-direction: column-reverse; align-items: stretch; }
+  .cd-bi-bar .cd-l[lang="ar"] { text-align: right; }
+}
 @media (max-width: 639.98px) {
   .cd-bi, .cd-bi tbody { display: block; }
   .cd-bi tr { display: flex; flex-direction: column; }
@@ -2418,6 +2460,8 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
   .cd-bi td.cd-en { border-top-style: dashed; }
   .cd-bi-head th.cd-en { padding-top: 0; border-top: 0; }
   .cd-bi-head th.cd-ar { padding-bottom: .15rem; border-bottom: 0; }
+  .cd-bi-bar { flex-direction: column-reverse; align-items: stretch; }
+  .cd-bi-bar .cd-l[lang="ar"] { text-align: right; }
 }
 .cd-fees { width: 100%; margin: 1.25rem 0; border-collapse: collapse; font-size: .9rem; }
 .cd-fees th, .cd-fees td { padding: .55rem .8rem; border: 1px solid var(--doc-line); text-align: start; vertical-align: top; }
@@ -2431,9 +2475,10 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-stamp { display: inline-block; margin: .35rem 0 .4rem !important; padding: .1rem .6rem; border: 2px solid var(--char-700); border-radius: 4px; color: var(--char-700); font-size: .85rem; font-weight: 700; transform: rotate(-2deg); }
 .cd-sig-img { display: block; max-width: 220px; max-height: 80px; margin: .25rem 0 .35rem; }
 .cd-sig-typed { margin: .2rem 0 .35rem !important; color: #14213d; font: italic 600 1.65rem/1.3 Georgia, "IBM Plex Sans Arabic", serif; }
+.cd-sig-typed:lang(ar) { font: 600 1.5rem/1.4 "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; }
 .cd-sign-name { font-weight: 600; }
 .cd-sign-date, .cd-sign-method { color: var(--doc-muted); font-size: .8rem; }
-.cd-sign-wait { padding-top: 1.75rem; color: var(--doc-muted); font-style: italic; }
+.cd-sign-wait { padding-top: 1.75rem; color: var(--doc-muted); }
 .cd-foot { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--doc-line); color: var(--doc-muted); font-size: .78rem; line-height: 1.7; }
 .cd-foot p { display: grid; gap: .15rem; }
 .cd-foot code { color: var(--doc-ink); font: .75rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
@@ -2530,11 +2575,30 @@ html[data-theme="dark"] .sign-done p { color: #b9e3c9; }
   html.is-printing body > *:not(#print-root) { display: none !important; }
   html.is-printing #print-root { display: block; }
   html.is-printing body { background: #fff; }
-  #print-root .contract-doc { max-width: none; padding: 0; border: 0; box-shadow: none; font-size: 10.5pt; }
+  #print-root .contract-doc { max-width: none; padding: 0; border: 0; box-shadow: none; font-size: 10.5pt; container-type: normal; }
   #print-root .contract-doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   #print-root .cd-clauses li, #print-root .cd-sign, #print-root .cd-fees, #print-root .cd-bi tr { break-inside: avoid; }
-  #print-root .cd-bi-head { break-after: avoid; }
+  #print-root .cd-clauses li.cd-long, #print-root .cd-bi tr.cd-long { break-inside: auto; }
+  #print-root .cd-bi-head, #print-root .cd-signs h3, #print-root .cd-sec-h, #print-root .cd-clauses h4 { break-after: avoid; }
   #print-root .cd-bi { font-size: 9pt; }
+  /* the fees summary and the signatures stay together, so a signature page never stands alone */
+  #print-root .cd-close { break-inside: avoid; }
+  /* fixed boxes repeat on every printed page: the emblem, and a faint diagonal "demo template" notice */
+  #print-root .contract-doc::before { position: fixed; inset: 0; background-position: center 45%; background-size: 80mm auto; }
+  #print-root .contract-doc::after {
+    content: attr(data-demo);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    width: 150mm;
+    color: rgb(122 79 0 / .1);
+    font: 700 17pt/1.6 "IBM Plex Sans Arabic", "Inter", sans-serif;
+    text-align: center;
+    white-space: pre-line;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    pointer-events: none;
+  }
 }
 
 /* ---------- 17. Touch screens & motion preferences ---------- */

@@ -62,6 +62,9 @@
       idType: "ID type",
       idTypes: { id: "National ID", iqama: "Iqama", cr: "Commercial registration / unified no." },
       idNumber: "ID or registration number",
+      repName: "Representative's name",
+      repCapacity: "Capacity",
+      repCapacityPh: "e.g. Owner of the establishment, or General Manager",
       phone: "Mobile number",
       email: "Email",
       address: "Address",
@@ -82,14 +85,17 @@
       custom: "Payment details",
       customPh: "e.g. Three equal monthly payments",
       other: "Agreement settings",
-      lawyer: "Lawyer in charge",
+      lawyer: "Signing for the firm",
       duration: "Term",
-      durationDefault: "until the work covered by this agreement is completed",
+      durationDefault: "until the work covered by it is completed",
+      durationPh: "e.g. for one year",
+      durationHint: "If left empty, the agreement remains in force until the work covered by it is completed.",
       city: "City (competent court)",
       cityDefault: "Jubail",
       lang: "Agreement language",
       langs: { ar: "العربية", en: "English", both: "Arabic & English" },
-      bothHint: "Write the details in Arabic and add their English text in the fields marked EN. Numbers and amounts are entered once.",
+      bothHint: "Write the details in Arabic in the fields marked AR, and their English text in the fields marked EN. Numbers and amounts are entered once.",
+      arTag: "AR",
       terms: "Additional terms",
       termsPh: "Optional",
       total: "Total incl. VAT",
@@ -102,7 +108,10 @@
         phone: "Invalid mobile number, e.g. 0501234567.",
         email: "Invalid email address.",
         amount: "Enter a valid amount.",
-        englishToo: "Add the English text for this field too."
+        englishToo: "Add the English text for this field too.",
+        arabicToo: "Add the Arabic text for this field too.",
+        arabicOnly: "Write this field in Arabic, and its English text in the EN field.",
+        englishOnly: "Write this field in English."
       }
     },
     detail: {
@@ -182,7 +191,8 @@
       title: "No access",
       text: "This section is not available to the “{role}” role. Change the role in “View as” to try other permissions."
     },
-    sample: "demo"
+    sample: "demo",
+    money: "SAR {n}"
   };
 
   en.sign = {
@@ -237,47 +247,52 @@
     partyA: "First party",
     partyB: "Second party (client)",
     firmName: "Khalid Allewa Lawyers and Consultants",
-    firmRep: "Represented by lawyer: {lawyer}",
+    firmRep: "Represented by: {lawyer}, {role}",
+    clientRep: "Represented by: {rep}, {capacity}",
     firmLicence: "Ministry of Justice licence no.: {licence}",
     firmCity: "Jubail, Kingdom of Saudi Arabia",
-    labels: { id: "ID / registration no.", phone: "Mobile", email: "Email", address: "Address" },
-    preamble: "Whereas the second party wishes to engage the services of the first party in “{matter}”, and whereas the first party is a licensed law firm, the two parties, each having full legal capacity, have agreed as follows:",
+    labels: { phone: "Mobile", email: "Email", address: "Address" },
+    idLabels: { id: "National ID no.", iqama: "Iqama no.", cr: "CR / unified no." },
+    preamble: "Whereas the second party wishes to engage the services of the first party for “{matter}”, and whereas the first party is a licensed law firm, the two parties, each having full legal capacity, have agreed as follows:",
     clauses: [
-      { h: "Preamble", p: "The above preamble forms an integral part of this agreement." },
-      { h: "Subject and scope of work", p: "The first party shall provide legal services in “{matter}” in the area of {area}, including: {scope}" },
+      { h: "Effect of the preamble", p: "The above preamble forms an integral part of this agreement." },
+      { h: "Subject and scope of work", p: "The first party shall provide legal services in connection with “{matter}”{area}, including: {scope}" },
       { h: "Fees", p: "The second party shall pay the first party fees of {fees}, {schedule}" },
       { h: "Expenses", p: "Court fees and actual expenses needed for the work, such as official fees, translation and expert fees, are borne by the second party and are not included in the fees unless otherwise agreed in writing." },
       { h: "Obligations of the first party", p: "The first party shall:", items: ["Exercise due professional care in performing the work in accordance with the law and the lawyers' Code of Professional Conduct.", "Keep the second party informed of developments in the work."], note: "The first party's obligation is one of means, not of result." },
       { h: "Obligations of the second party", p: "The second party shall:", items: ["Provide the first party with accurate and complete information and documents in good time.", "Issue the power of attorney the first party needs to carry out the work.", "Pay the fees when due."] },
-      { h: "Term and termination", p: "This agreement takes effect on signature {duration}. Either party may end it by written notice, in which case the first party is entitled to fees for the work already done." },
+      { h: "Term and termination", p: "This agreement shall take effect on the date of its signature and shall remain in force {duration}. Either party may terminate it by written notice, in which case the first party shall be entitled to fees for the work completed up to the date of termination." },
       { h: "Confidentiality and data protection", p: "The first party shall treat the second party's data and documents in strict confidence under the lawyers' Code of Professional Conduct and the Personal Data Protection Law, and disclose them only with the second party's consent or where the law requires." },
-      { h: "Electronic signature", p: "Both parties acknowledge that approving and signing this agreement electronically is a binding signature with full legal effect under the Electronic Transactions Law of the Kingdom of Saudi Arabia." },
-      { h: "Governing law", p: "This agreement is governed by the laws of the Kingdom of Saudi Arabia, and the competent courts in {city} have jurisdiction over any dispute arising from it." }
+      { h: "Electronic signature", p: "The parties acknowledge that the electronic approval and signature of this agreement are binding on them and have full legal effect under the Electronic Transactions Law of the Kingdom of Saudi Arabia." },
+      { id: "law", h: "Governing law and jurisdiction", p: "This agreement shall be governed by the laws of the Kingdom of Saudi Arabia, and the competent courts in {city} shall have jurisdiction over any dispute arising from it." }
     ],
     extraTerms: "Additional terms",
+    // the area of work as written in Article 2 ("Other" names no area)
+    areaPhrase: " in the field of {name}",
+    areas: { commercial: "commercial law", labor: "labour law", realestate: "real estate", family: "personal status law", criminal: "criminal law", arbitration: "arbitration and dispute resolution" },
     // heading of each article: "Article 1: Preamble"
     article: "Article {n}: {h}",
     // bilingual agreements only
-    language: { h: "Language", p: "This agreement is made in Arabic and English. In case of any discrepancy between the two texts, the Arabic text shall prevail." },
-    bi: { parties: "The parties", fees: "Fees summary" },
-    copies: { h: "Copies", p: "This agreement was made electronically. A signed copy is kept by the first party, and the second party receives its copy upon signing." },
+    language: { h: "Language", p: "This agreement has been executed in Arabic and English. In case of any discrepancy between the two texts, the Arabic text shall prevail." },
+    bi: { parties: "The parties", preamble: "Preamble", fees: "Fees summary" },
+    copies: { h: "Copies", p: "This agreement has been executed electronically. A signed copy is kept by the first party, and the second party receives its copy upon signing." },
     fees: {
       excl: "SAR {amount}, plus VAT (15%) of SAR {vat}, making a total of SAR {total}",
       incl: "SAR {total} including VAT",
       none: "SAR {amount}"
     },
     schedule: {
-      full: "payable in full on signing this agreement.",
-      two: "payable in two instalments: 50% on signing this agreement and 50% on completion of the work.",
-      custom: "payable as follows: {custom}."
+      full: "and the total amount is payable in full on signing this agreement.",
+      two: "and the total amount is payable in two instalments: 50% on signing this agreement and 50% on completion of the work.",
+      custom: "and the total amount is payable as follows: {custom}."
     },
-    table: { fees: "Fees", vat: "VAT (15%)", total: "Total", schedule: "Payment", currency: "SAR" },
+    table: { fees: "Fees", vat: "VAT (15%)", total: "Total", schedule: "Payment", money: "SAR {n}" },
     signatures: "Signatures",
     approved: "Approved electronically",
     pending: "Awaiting client signature",
     signedAt: "Signed on",
     method: { drawn: "Handwritten on screen, with a verification code", typed: "Typed signature, with a verification code" },
     fingerprint: "Document fingerprint (SHA-256)",
-    footer: "This agreement was made electronically through the Khalid Allewa Lawyers and Consultants portal."
+    footer: "This agreement was prepared electronically through the Khalid Allewa Lawyers and Consultants portal."
   };
 })();

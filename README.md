@@ -114,20 +114,27 @@ to the new domain.
 
 `login.html` → `portal.html`. **Demo account:** `info@kalidlaw.com` / `Allewa@2026`.
 
-- **E-contracts:** create a fee agreement (client, matter, fees with or without 15% VAT, payment, lawyer;
-  language: Arabic, English, or **Arabic & English**) → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
+- **E-contracts:** create a fee agreement (client — for a company, its representative and capacity — matter, fees
+  with or without 15% VAT, payment, who signs for the firm; language: Arabic, English, or **Arabic & English**)
+  → preview → *Approve and send* (the text is frozen and a SHA-256 fingerprint is taken)
   → a signing link for the client (copy, WhatsApp, email) → on `sign.html` the client reads it, signs with a
   finger or by typing, ticks the consent and enters a code (demo code **1234**) → the client's page offers
   *Send confirmation to the firm* (WhatsApp to the firm's number, or copy) → opening that confirmation link in the
   portal marks the agreement *Signed* with the signature, the time and the history. *Print / save as PDF* gives a
-  clean A4 copy.
+  clean A4 copy: the agreement number and page numbers at the foot of every page (Chrome / Edge), the emblem and a
+  faint "demo template" notice on every page, and the fees summary kept with the signatures.
 - **Bilingual agreements:** a two-column table, English left and Arabic right, each article under a dark heading
   row ("Article 5: … | البند الخامس: …"), numbered points (1. 2. 3. / ١. ٢. ٣.), a language clause (the Arabic text
-  prevails) and the firm's emblem as a faint watermark. The form adds English fields (marked EN) for the free text;
-  names, numbers and amounts are entered once. On phones each article shows its Arabic, then its English.
+  prevails) and the firm's emblem as a faint watermark. The form marks the main fields AR and adds English fields
+  (marked EN) for the free text; names, numbers and amounts are entered once. Each text needs its counterpart in
+  the other language, and each column must be in its own language, so the two versions always match. Switching a
+  draft to English-only and back keeps both texts. When the sheet is narrow (phones), each article shows its
+  Arabic, then its English.
 - **Links work on any phone:** with no server, the signing link carries a copy of the agreement after the `#`
   (never sent to a server), and the confirmation link carries it back with the signature (drawn signatures as
-  compact strokes). Both are a few hundred characters long. The fingerprint is recalculated on each side and matches.
+  compact strokes). A link is roughly 1,000–3,000 characters (a bilingual agreement with long texts can be longer):
+  fine on WhatsApp and when copied, though some email apps may cut very long links. The fingerprint is
+  recalculated on each side and matches. Phase 2 replaces these with short links to records on the server.
 - **Permissions:** "View as" switches between Administrator, Lawyer, Trainee lawyer and Admin staff to show
   how the menu and actions change (trainees do not see contracts; admin staff can only view them). The
   matrix is on *Users & permissions*, which also has *Reset demo data*.
