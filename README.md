@@ -20,6 +20,7 @@ public/                    ← upload / publish this folder
 ├── login.html             Employee sign-in (demo account)
 ├── portal.html            Employee portal (demo): overview, e-contracts, users & permissions
 ├── sign.html              The client's page for reading and e-signing a fee agreement (demo)
+├── quotation.html         Quotations: fill in the variables, print a ready 4-page file (see *Quotations* below)
 ├── 404.html               "Page not found"
 ├── _headers               Cloudflare Pages security headers
 ├── robots.txt
@@ -147,6 +148,20 @@ to the new domain.
 kept in that browser (localStorage), and the signature returns through the confirmation link instead of a server.
 Phase 2 needs a backend: personal accounts with permissions checked on the server, an encrypted database, sending the link
 and code by SMS/email, an approved e-signature or Nafath identity check, server-made PDFs and an audit log.
+
+## Quotations
+
+`quotation.html`, opened from the portal (*Quotations* in the menu, *New quotation* on the overview) or by a direct link.
+The firm fills in the variables and prints or saves a PDF, A4, in the firm's identity with its logo as a watermark:
+
+1. **Page 1:** the firm's profile. 2. **Page 2:** the quotation. 3. **Pages 3 and 4:** the rest of the agreement.
+
+- **Contract types:** *استشارة* (fixed fee) and *استشارة مع الترافع* (fixed fee plus the litigation fee table). The type sets the scope in clause 3 and the fees in clause 4.
+- **Payment:** the amount is split by the payment choice and the duration; clause 4 writes each amount in figures and in Arabic words (`js/tafqit.js`).
+- **Fits the pages by itself:** the agreement takes the largest text size that fits two pages (`SIZES` in `js/quotation.js`). If a very long text cannot fit even at the smallest size, it adds a page, and clause 8 states the real page count.
+- **Empty fields** print as dots, to be filled in by hand. Only the second party's name and the amount are required.
+- **Private:** the page's text and the agreement are encrypted in `data/quotation-vault.js` (AES-GCM, key from the access code), so neither this public repository nor the live site shows them without the code. The direct link carries the code after the `#`, which browsers never send to a server. What is typed in the form stays in that browser. The numbers count per device, since there is no server.
+- **Changing the text:** edit `client-docs/quotation/content.json`, then run `node client-docs/quotation/build-vault.mjs` and publish the new `public/data/quotation-vault.js`. The `client-docs/` folder exists only on the development machine and is never committed; it holds the plain text, the code and the link.
 
 ## Before launch
 

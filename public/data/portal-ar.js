@@ -20,6 +20,7 @@
     nav: {
       overview: "الرئيسية",
       contracts: "العقود الإلكترونية",
+      quotes: "عروض الأسعار",
       cases: "القضايا",
       appointments: "المواعيد",
       clients: "العملاء",
@@ -41,6 +42,7 @@
       recent: "أحدث الاتفاقيات",
       activity: "آخر النشاطات",
       newContract: "اتفاقية أتعاب جديدة",
+      newQuote: "عرض سعر جديد",
       allContracts: "كل الاتفاقيات",
       empty: "لا توجد اتفاقيات بعد."
     },

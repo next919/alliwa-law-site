@@ -20,6 +20,7 @@
     nav: {
       overview: "Overview",
       contracts: "E-contracts",
+      quotes: "Quotations",
       cases: "Cases",
       appointments: "Appointments",
       clients: "Clients",
@@ -41,6 +42,7 @@
       recent: "Latest agreements",
       activity: "Recent activity",
       newContract: "New fee agreement",
+      newQuote: "New quotation",
       allContracts: "All agreements",
       empty: "No agreements yet."
     },

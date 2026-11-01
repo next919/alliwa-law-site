@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>عروض الأسعار</title>
+  <meta name="description" content="">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#36454f">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="css/quotation.css">
+</head>
+<!-- Quotation tool (js/quotation.js). Own stylesheet, no demo strip and no display options: this page prints the firm's real file.
+     Its contract text is encrypted in data/quotation-vault.js; what is typed here stays in this browser. -->
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-family" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M12 18s-3.5-2.2-3.5-4.6A1.9 1.9 0 0 1 12 12.3a1.9 1.9 0 0 1 3.5 1.1C15.5 15.8 12 18 12 18Z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8"/><path d="M20 3v5h-5"/></symbol>
+</svg>
+
+<!-- Entry: the direct link opens straight away; from the portal button, the access code is asked here -->
+<main class="q-gate" data-gate hidden>
+  <form class="q-gate-card" data-gate-form novalidate>
+    <img class="q-gate-logo" src="images/logo-ar-dark.svg" alt="خالد اللواء محامون ومستشارون" width="214" height="50">
+    <h1>عروض الأسعار</h1>
+    <p>هذه الصفحة خاصة بالمكتب. اكتب رمز الدخول للمتابعة.</p>
+    <label class="q-field">
+      <span>رمز الدخول</span>
+      <input class="q-input" type="text" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" data-gate-code>
+    </label>
+    <label class="q-check"><input type="checkbox" data-gate-remember><span>تذكرني على هذا الجهاز</span></label>
+    <p class="q-error" role="alert" data-gate-error hidden></p>
+    <button class="q-btn q-btn-primary q-btn-block" type="submit" data-gate-submit>دخول</button>
+    <a class="q-back" href="portal.html">العودة إلى بوابة الموظفين</a>
+  </form>
+</main>
+
+<div class="q-app" data-app hidden>
+  <header class="q-bar">
+    <a class="q-bar-brand" href="portal.html" title="بوابة الموظفين"><img src="images/logo-ar.svg" alt="خالد اللواء محامون ومستشارون" width="171" height="40"></a>
+    <span class="q-bar-title">عروض الأسعار</span>
+    <div class="q-bar-actions">
+      <button class="q-btn q-btn-ghost" type="button" data-lock title="إقفال الصفحة على هذا الجهاز"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>إقفال</span></button>
+      <button class="q-btn q-btn-primary" type="button" data-print><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg><span>طباعة / حفظ PDF</span></button>
+    </div>
+  </header>
+
+  <div class="q-layout">
+    <form class="q-form" data-form novalidate autocomplete="off">
+      <p class="q-error" role="alert" data-form-error hidden></p>
+
+      <fieldset class="q-group">
+        <legend>الطرف الثاني</legend>
+        <label class="q-field"><span>اسم الطرف الثاني <em>*</em></span><input class="q-input" name="p2name" placeholder="مثال: شركة ..."></label>
+        <div class="q-row">
+          <label class="q-field"><span>السجل التجاري</span><input class="q-input" name="p2cr" inputmode="numeric" dir="ltr"></label>
+          <label class="q-field"><span>المدينة / العنوان</span><input class="q-input" name="p2address"></label>
+        </div>
+        <div class="q-row">
+          <label class="q-field"><span>البريد الإلكتروني</span><input class="q-input" name="p2email" type="email" dir="ltr"></label>
+          <label class="q-field"><span>الجوال</span><input class="q-input" name="p2phone" inputmode="tel" dir="ltr"></label>
+        </div>
+        <details class="q-more">
+          <summary>ممثل الطرف الثاني في التوقيع</summary>
+          <label class="q-field"><span>الاسم</span><input class="q-input" name="p2rep"></label>
+          <div class="q-row">
+            <label class="q-field"><span>الصفة</span><input class="q-input" name="p2cap"></label>
+            <label class="q-field"><span>الجنسية</span><input class="q-input" name="p2nat"></label>
+          </div>
+          <div class="q-row">
+            <label class="q-field"><span>رقم البطاقة الشخصية</span><input class="q-input" name="p2id" inputmode="numeric" dir="ltr"></label>
+            <label class="q-field"><span>تاريخ الميلاد</span><input class="q-input" name="p2dob" dir="ltr"></label>
+          </div>
+          <p class="q-hint">الحقول الفارغة تطلع نقاط في العقد، وتنكتب باليد بعد الطباعة.</p>
+        </details>
+      </fieldset>
+
+      <fieldset class="q-group">
+        <legend>العقد</legend>
+        <label class="q-field"><span>نوع العقد</span><select class="q-input" name="type" data-type></select></label>
+        <div class="q-row">
+          <label class="q-field"><span>تاريخ العقد</span><input class="q-input" type="date" name="contractDate"></label>
+          <label class="q-field"><span>مدينة التوقيع</span><input class="q-input" name="city"></label>
+        </div>
+        <div class="q-row">
+          <label class="q-field"><span>مدة العقد</span>
+            <select class="q-input" name="duration">
+              <option value="1">شهر ميلادي واحد</option>
+              <option value="3">ثلاثة أشهر ميلادية</option>
+              <option value="6">ستة أشهر ميلادية</option>
+              <option value="9">تسعة أشهر ميلادية</option>
+              <option value="12" selected>سنة ميلادية واحدة</option>
+              <option value="24">سنتين ميلاديتين</option>
+              <option value="36">ثلاث سنوات ميلادية</option>
+            </select>
+          </label>
+          <label class="q-field"><span>يسري العقد من</span><input class="q-input" type="date" name="start"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="q-group">
+        <legend>الأتعاب</legend>
+        <label class="q-field"><span>المبلغ الإجمالي للعقد (ريال، قبل الضريبة) <em>*</em></span><input class="q-input" name="amount" inputmode="decimal" dir="ltr" placeholder="0"></label>
+        <label class="q-field"><span>الدفع</span>
+          <select class="q-input" name="freq">
+            <option value="1">شهري</option>
+            <option value="3" selected>ربع سنوي</option>
+            <option value="6">نصف سنوي</option>
+            <option value="12">سنوي</option>
+          </select>
+        </label>
+        <label class="q-check"><input type="checkbox" name="vat" checked><span>إضافة ضريبة القيمة المضافة 15% في صفحة العرض</span></label>
+        <p class="q-summary" aria-live="polite" data-pay-summary></p>
+      </fieldset>
+
+      <fieldset class="q-group" data-lit hidden>
+        <legend>أتعاب التقاضي</legend>
+        <div class="q-row">
+          <label class="q-field"><span>دعاوى الطرف الثاني: النسبة %</span><input class="q-input" name="r1pct" inputmode="decimal" dir="ltr"></label>
+          <label class="q-field"><span>المقدم من الأتعاب %</span><input class="q-input" name="r1up" inputmode="decimal" dir="ltr"></label>
+        </div>
+        <div class="q-row">
+          <label class="q-field"><span>الحد الأدنى (ريال)</span><input class="q-input" name="r1min" inputmode="decimal" dir="ltr"></label>
+          <label class="q-field"><span>الحد الأعلى (ريال)</span><input class="q-input" name="r1max" inputmode="decimal" dir="ltr"></label>
+        </div>
+        <div class="q-row">
+          <label class="q-field"><span>الدعاوى ضده: النسبة %</span><input class="q-input" name="r2pct" inputmode="decimal" dir="ltr"></label>
+          <label class="q-field"><span>عملية الإخلاء (ريال)</span><input class="q-input" name="r3fee" inputmode="decimal" dir="ltr"></label>
+        </div>
+        <div class="q-row">
+          <label class="q-field"><span>الجلسة، غير المالية (ريال)</span><input class="q-input" name="r4fee" inputmode="decimal" dir="ltr"></label>
+          <label class="q-field"><span>طلبات التنفيذ: النسبة %</span><input class="q-input" name="execPct" inputmode="decimal" dir="ltr"></label>
+        </div>
+        <label class="q-field"><span>إجراءات التنفيذ الإضافية (ريال)</span><input class="q-input" name="execFee" inputmode="decimal" dir="ltr"></label>
+      </fieldset>
+
+      <fieldset class="q-group">
+        <legend>بيانات العرض</legend>
+        <div class="q-row">
+          <label class="q-field"><span>رقم العرض</span><input class="q-input" name="ref" dir="ltr"></label>
+          <label class="q-field"><span>تاريخ العرض</span><input class="q-input" type="date" name="quoteDate"></label>
+        </div>
+        <label class="q-field"><span>صلاحية العرض (يوم)</span><input class="q-input" name="validity" inputmode="numeric" dir="ltr"></label>
+        <p class="q-hint">اتركها فارغة إذا ما تبي تظهر في العرض.</p>
+      </fieldset>
+
+      <details class="q-group q-more">
+        <summary>بيانات المكتب في العقد</summary>
+        <label class="q-field"><span>المحامي المسؤول عن المراسلات</span><input class="q-input" name="lawyer"></label>
+        <label class="q-field"><span>بريد المحامي</span><input class="q-input" name="lawyerEmail" type="email" dir="ltr"></label>
+        <div class="q-row">
+          <label class="q-field"><span>بريد المكتب</span><input class="q-input" name="firmEmail" type="email" dir="ltr"></label>
+          <label class="q-field"><span>رقم المكتب / واتساب</span><input class="q-input" name="firmWhats" inputmode="tel" dir="ltr"></label>
+        </div>
+        <label class="q-field"><span>مدينة الجهة القضائية المختصة</span><input class="q-input" name="jurisdiction"></label>
+      </details>
+
+      <button class="q-btn q-btn-ghost q-btn-block" type="button" data-new><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>عرض جديد (تفريغ النموذج)</span></button>
+    </form>
+
+    <div class="q-preview" data-preview>
+      <div class="q-stage" data-stage><div class="q-sheets" data-sheets></div></div>
+    </div>
+  </div>
+</div>
+
+<noscript><p class="q-noscript">يرجى تفعيل JavaScript لعرض هذه الصفحة.</p></noscript>
+
+<script src="data/quotation-vault.js" defer></script>
+<script src="js/tafqit.js" defer></script>
+<script src="js/quotation.js" defer></script>
+</body>
+</html>

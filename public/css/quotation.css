@@ -1,0 +1,255 @@
+/* ==========================================================================
+   Quotation tool (quotation.html)
+   Own stylesheet: the printed file always carries the firm's official look,
+   whatever display option a visitor picked on the rest of the site.
+   1. Screen: entry, bar, form, preview     2. The A4 sheets     3. Print
+   ========================================================================== */
+:root {
+  --charcoal: #36454f;      /* brand charcoal gray */
+  --charcoal-deep: #27333b;
+  --silver: #c0c0c0;        /* brand brushed silver */
+  --silver-line: #d5d8da;
+  --silver-tint: #f3f4f5;
+  --ink: #1c252b;
+  --ink-soft: #55626b;
+  --paper: #ffffff;
+  --app-bg: #e9ebed;
+  --danger: #a4262c;
+  --font: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --latin: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--app-bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+[hidden] { display: none !important; }
+.sprite { display: none; }
+.icon { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.q-noscript { text-align: center; padding: 2rem; }
+
+/* ---------- buttons and fields ---------- */
+.q-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em; min-height: 42px; padding: .45em 1.1em; border: 1px solid transparent; border-radius: 8px; font: inherit; font-weight: 500; cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s; }
+.q-btn:focus-visible, .q-input:focus-visible, .q-more summary:focus-visible { outline: 2px solid var(--charcoal); outline-offset: 2px; }
+.q-btn-primary { background: var(--charcoal); color: #fff; }
+.q-btn-primary:hover { background: var(--charcoal-deep); }
+.q-btn-primary[disabled] { opacity: .65; cursor: progress; }
+.q-btn-ghost { background: transparent; border-color: var(--silver); color: inherit; }
+.q-btn-ghost:hover { background: rgb(192 192 192 / .18); }
+.q-btn-block { width: 100%; }
+
+.q-field { display: block; margin: 0 0 .7rem; min-width: 0; }
+.q-field > span { display: block; font-size: .84rem; font-weight: 500; color: var(--ink-soft); margin-bottom: .25rem; }
+.q-field em { color: var(--danger); font-style: normal; }
+.q-input { width: 100%; min-height: 40px; padding: .4em .7em; border: 1px solid var(--silver-line); border-radius: 7px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; }
+.q-input[dir="ltr"] { text-align: left; }
+.q-input:focus { border-color: var(--charcoal); }
+.q-input.is-missing { border-color: var(--danger); }
+select.q-input { padding-inline-end: .3em; }
+.q-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .7rem; }
+.q-check { display: flex; align-items: flex-start; gap: .5em; margin: 0 0 .7rem; font-size: .9rem; cursor: pointer; }
+.q-check input { width: 1.05em; height: 1.05em; margin: .3em 0 0; accent-color: var(--charcoal); flex: none; }
+.q-hint { margin: -.25rem 0 .7rem; font-size: .8rem; color: var(--ink-soft); }
+.q-summary { margin: 0; padding: .55em .75em; border-radius: 7px; background: var(--silver-tint); font-size: .88rem; }
+.q-summary:empty { display: none; }
+.q-error { margin: 0 0 .8rem; padding: .55em .8em; border-radius: 7px; background: #fbeced; color: var(--danger); font-size: .9rem; }
+
+/* ---------- entry ---------- */
+.q-gate { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 1.25rem; background: var(--charcoal); }
+.q-gate-card { width: min(100%, 25rem); padding: 2rem 1.75rem 1.5rem; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgb(0 0 0 / .28); }
+.q-gate-logo { display: block; width: 214px; max-width: 100%; height: auto; margin: 0 auto 1.25rem; }
+.q-gate-card h1 { margin: 0 0 .3rem; font-size: 1.3rem; font-weight: 600; color: var(--charcoal); text-align: center; }
+.q-gate-card > p:not(.q-error) { margin: 0 0 1.1rem; color: var(--ink-soft); font-size: .92rem; text-align: center; }
+.q-back { display: block; margin-top: .9rem; text-align: center; color: var(--ink-soft); font-size: .85rem; }
+
+/* ---------- app ---------- */
+.q-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: .9rem; padding: .55rem clamp(1rem, 2vw, 1.5rem); background: var(--charcoal); color: #fff; }
+.q-bar-brand { display: flex; }
+.q-bar-brand img { width: 150px; height: auto; display: block; }
+.q-bar-title { padding-inline-start: .9rem; border-inline-start: 1px solid rgb(255 255 255 / .28); font-weight: 500; }
+.q-bar-actions { display: flex; gap: .5rem; margin-inline-start: auto; }
+.q-bar .q-btn-primary { background: #fff; color: var(--charcoal); }
+.q-bar .q-btn-primary:hover { background: var(--silver-tint); }
+.q-bar .q-btn-ghost { border-color: rgb(255 255 255 / .38); }
+.q-bar .q-btn-ghost:hover { background: rgb(255 255 255 / .1); }
+.q-bar .q-btn:focus-visible { outline-color: #fff; }
+
+.q-layout { display: grid; grid-template-columns: minmax(330px, 410px) minmax(0, 1fr); align-items: start; }
+.q-form { position: sticky; top: 58px; max-height: calc(100vh - 58px); overflow-y: auto; padding: 1rem clamp(1rem, 2vw, 1.25rem) 2rem; background: #fff; border-inline-end: 1px solid var(--silver-line); }
+.q-group { margin: 0 0 1rem; padding: 0 0 .35rem; border: 0; border-bottom: 1px solid var(--silver-line); min-width: 0; }
+.q-group > legend, .q-group > summary { padding: 0; margin-bottom: .6rem; font-size: 1rem; font-weight: 600; color: var(--charcoal); }
+.q-more summary { cursor: pointer; }
+fieldset .q-more { margin: 0 0 .7rem; }
+fieldset .q-more summary { margin-bottom: .55rem; font-size: .88rem; font-weight: 500; color: var(--charcoal); }
+.q-preview { padding: 1.25rem clamp(.75rem, 2vw, 1.5rem) 2.5rem; min-width: 0; overflow: hidden; }
+.q-stage { margin-inline: auto; overflow: hidden; }
+.q-sheets { width: 210mm; transform-origin: top right; }
+
+@media (max-width: 920px) {
+  .q-layout { grid-template-columns: minmax(0, 1fr); }
+  .q-form { position: static; max-height: none; overflow: visible; border-inline-end: 0; border-bottom: 1px solid var(--silver-line); }
+  .q-bar-title { display: none; }
+}
+@media (max-width: 480px) {
+  .q-bar { gap: .5rem; padding-inline: .75rem; }
+  .q-bar-brand img { width: 104px; }
+  .q-bar .q-btn { padding-inline: .7em; font-size: .86rem; }
+  .q-bar [data-lock] span { display: none; }
+}
+
+/* ==========================================================================
+   2. The A4 sheets
+   ========================================================================== */
+.sheet {
+  position: relative; display: flex; flex-direction: column;
+  width: 210mm; height: 297mm; margin: 0 0 7mm; overflow: hidden;
+  background: var(--paper); color: var(--ink); font-size: 10pt; line-height: 1.6;
+  box-shadow: 0 1mm 5mm rgb(28 37 43 / .18);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.sheet:last-child { margin-bottom: 0; }
+.sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sheet::after { content: ""; position: absolute; inset: auto 0 0; height: 2.4mm; background: var(--charcoal); }
+:where(.sheet) :where(h1, h2, p, dl, dd, ul) { margin: 0; padding: 0; }
+.sheet ul { list-style: none; }
+.sheet bdi.v { font-weight: 500; }
+.dots { letter-spacing: .04em; color: var(--ink-soft); }
+.latin { font-family: var(--latin); font-weight: 400; letter-spacing: .38em; font-size: 7.4pt; direction: ltr; unicode-bidi: isolate; }
+
+/* the firm's emblem, faint, in the middle of every page */
+.sheet-wm { position: absolute; top: 50%; left: 50%; width: 138mm; height: auto; transform: translate(-50%, -50%); opacity: .045; pointer-events: none; }
+
+/* letterhead */
+.lh { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; margin: 0 16mm; padding: 8.5mm 0 3mm; border-bottom: .25mm solid var(--silver); flex: none; }
+.lh::after { content: ""; position: absolute; inset: auto 0 -.45mm auto; width: 34mm; height: .65mm; background: var(--charcoal); }
+.sheet::before { content: ""; position: absolute; inset: 0 0 auto; height: 2.4mm; background: var(--charcoal); }
+.lh-logo { display: block; width: 50mm; height: auto; }
+.lh-meta { text-align: left; font-size: 8pt; color: var(--ink-soft); line-height: 1.5; }
+.lh-meta bdi { display: block; }
+.lf { position: relative; flex: none; margin: auto 16mm 0; padding: 2mm 0 5.6mm; border-top: .25mm solid var(--silver); display: flex; justify-content: space-between; gap: 6mm; font-size: 7.4pt; line-height: 1.45; color: var(--ink-soft); }
+.lf-sep { color: var(--silver); padding-inline: .5em; }
+.lf-page { white-space: nowrap; }
+
+/* ----- page 1: profile ----- */
+.pf-band { position: relative; flex: none; height: 116mm; background: var(--charcoal-deep); color: #fff; overflow: hidden; }
+.pf-pattern { position: absolute; inset: 0; background: url("../images/pattern.svg") 0 0 / 15mm 15mm; opacity: .05; }
+.pf-photo { position: absolute; top: 0; left: 0; width: 110mm; height: 116mm; object-fit: cover; object-position: 50% 58%; clip-path: polygon(0 0, 100% 0, 76% 100%, 0 100%); }
+.pf-slant { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pf-logo { position: absolute; top: 14mm; right: 16mm; width: 70mm; height: auto; }
+.pf-head { position: absolute; right: 16mm; bottom: 15mm; width: 98mm; padding: 5mm 5.5mm 5mm 0; }
+.pf-head::before, .pf-head::after { content: ""; position: absolute; width: 7mm; height: 7mm; border: 0 solid var(--silver); }
+.pf-head::before { top: 0; right: -5.5mm; border-width: .35mm .35mm 0 0; }
+.pf-head::after { bottom: 0; left: 0; border-width: 0 0 .35mm .35mm; }
+.pf-head .latin { display: block; color: var(--silver); margin-bottom: 1.5mm; text-align: right; }
+.pf-eyebrow { display: block; font-size: 10pt; color: var(--silver); margin-bottom: 1.5mm; }
+.pf-head h1 { font-size: 21pt; font-weight: 300; line-height: 1.35; }
+.pf-head h1 strong { display: block; font-size: 14.5pt; font-weight: 500; color: #e8eaeb; }
+
+.pf-body { position: relative; flex: 1; min-height: 0; padding: 8mm 16mm 5mm; display: flex; flex-direction: column; justify-content: space-between; gap: 5mm; }
+.pf-h { display: flex; align-items: center; gap: 2.5mm; font-size: 12pt; font-weight: 600; color: var(--charcoal); margin-bottom: 2mm; }
+.pf-h::before { content: ""; width: 6mm; height: .5mm; background: var(--silver); }
+.pf-top { display: grid; grid-template-columns: minmax(0, 1fr) 60mm; gap: 8mm; align-items: start; }
+.pf-about p { font-size: 10.2pt; line-height: 1.75; text-align: justify; }
+.pf-about p + p { margin-top: 1.5mm; }
+.pf-leaders { display: grid; gap: 3mm; }
+.pf-leader { display: flex; align-items: center; gap: 3mm; }
+.pf-leader img { width: 16mm; height: 19mm; object-fit: cover; object-position: 50% 12%; border: .25mm solid var(--silver); display: block; }
+.pf-leader b { display: block; font-size: 9pt; font-weight: 600; color: var(--charcoal); line-height: 1.4; }
+.pf-leader span { font-size: 8.2pt; color: var(--ink-soft); }
+.pf-pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3.5mm; }
+.pf-pillar { padding: 4mm 4.5mm; border: .25mm solid var(--silver); border-top: .7mm solid var(--charcoal); background: rgb(255 255 255 / .6); }
+.pf-pillar h2 { font-size: 10.5pt; font-weight: 600; color: var(--charcoal); margin-bottom: 1mm; }
+.pf-pillar p { font-size: 9pt; line-height: 1.65; color: var(--ink); }
+.pf-practice { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4.5mm 5mm; margin-top: 3mm; }
+.pf-area { display: flex; gap: 2.5mm; align-items: flex-start; }
+.pf-area .icon { width: 7.5mm; height: 7.5mm; padding: 1.5mm; border-radius: 50%; background: var(--charcoal); color: #fff; stroke-width: 1.7; }
+.pf-area b { display: block; font-size: 9.6pt; font-weight: 600; color: var(--charcoal); line-height: 1.4; }
+.pf-area span { display: block; font-size: 8.4pt; line-height: 1.55; color: var(--ink-soft); }
+
+/* ----- page 2: quotation ----- */
+.sheet-body { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 5mm 16mm 0; }
+.qt { display: flex; flex-direction: column; font-size: calc(10pt * var(--qs, 1)); }
+.qt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; margin-bottom: 1.2em; }
+.qt-title { position: relative; padding: 2.5mm 4.5mm 3mm 0; }
+.qt-title::before, .qt-title::after { content: ""; position: absolute; width: 5mm; height: 5mm; border: 0 solid var(--silver); }
+.qt-title::before { top: 0; right: 0; border-width: .35mm .35mm 0 0; }
+.qt-title::after { bottom: 0; left: -5mm; border-width: 0 0 .35mm .35mm; }
+.qt-title h1 { font-size: 24pt; font-weight: 300; line-height: 1.2; color: var(--charcoal); }
+.qt-title .latin { display: block; color: var(--ink-soft); margin-top: .5mm; text-align: right; }
+.qt-meta { display: grid; grid-template-columns: auto auto; gap: .6mm 4mm; font-size: .88em; align-items: baseline; }
+.qt-meta dt { color: var(--ink-soft); }
+.qt-meta dd { font-weight: 500; text-align: left; }
+.qt-meta small { display: block; font-size: .92em; font-weight: 400; color: var(--ink-soft); }
+.qt-to { padding: .7em 1.1em; margin-bottom: 1em; border-inline-start: .7mm solid var(--charcoal); background: rgb(243 244 245 / .75); }
+.qt-to b { display: block; font-size: 1.1em; font-weight: 600; color: var(--charcoal); }
+.qt-to span { font-size: .86em; color: var(--ink-soft); }
+.qt-p { margin-bottom: .35em; text-align: justify; }
+.qt-h { display: flex; align-items: center; gap: 2.5mm; margin: 1em 0 .5em; font-size: 1.08em; font-weight: 600; color: var(--charcoal); }
+.qt-h::before { content: ""; width: 5mm; height: .5mm; background: var(--silver); }
+
+.kv { width: 100%; border-collapse: collapse; font-size: .95em; }
+.kv th, .kv td { padding: .48em .95em; border: .2mm solid var(--silver-line); text-align: start; vertical-align: middle; line-height: 1.5; }
+.kv th { width: 34mm; font-weight: 500; color: var(--charcoal); background: rgb(243 244 245 / .8); }
+.money { width: 100%; border-collapse: collapse; font-size: .97em; }
+.money td { padding: .48em .95em; border-bottom: .2mm solid var(--silver-line); }
+.money td:last-child { text-align: left; white-space: nowrap; font-weight: 500; }
+.money .total td { padding: 0; border-bottom: 0; }
+.money .total div { display: flex; justify-content: space-between; gap: 6mm; padding: .55em .85em; background: var(--charcoal); color: #fff; font-size: 1.12em; font-weight: 600; }
+.money .words td { padding-top: .5em; border-bottom: 0; font-size: .92em; color: var(--ink-soft); }
+.qt-notes { margin-top: .7em; font-size: .86em; color: var(--ink-soft); line-height: 1.55; }
+.qt-notes li { position: relative; padding-inline-start: 3mm; }
+.qt-notes li::before { content: ""; position: absolute; top: .72em; right: 0; width: 1mm; height: 1mm; border-radius: 50%; background: var(--silver); }
+.qt-sign { margin-top: auto; padding: 3mm 0 4mm; display: grid; grid-template-columns: minmax(0, 1fr) 62mm; gap: 8mm; align-items: end; }
+.qt-sign p { margin-bottom: .6mm; }
+.qt-sign .who { font-weight: 600; color: var(--charcoal); }
+.qt-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+.qt-box { height: 19mm; border: .2mm solid var(--silver); padding: 1mm 2mm; font-size: .78em; color: var(--ink-soft); }
+
+/* ----- contract pages ----- */
+.contract { font-size: var(--fs, 10pt); line-height: var(--lh, 1.58); padding-inline: 15mm; padding-top: 2.5mm; }
+.sheet-contract .lh { margin-inline: 15mm; padding-top: 6.5mm; padding-bottom: 2mm; }
+.sheet-contract .lh-logo { width: 40mm; }
+.sheet-contract .lh-meta { font-size: 7.4pt; line-height: 1.4; }
+.sheet-contract .lf { margin-inline: 15mm; }
+.c-title { text-align: center; font-size: 1.38em; font-weight: 600; color: var(--charcoal); margin-bottom: .35em; }
+.c-lead { text-align: center; font-weight: 600; margin-bottom: .5em; }
+.c-p { text-align: justify; margin-bottom: .36em; }
+.c-center { text-align: center; font-weight: 600; font-size: 1.1em; color: var(--charcoal); margin: .5em 0 .3em; }
+.c-h { font-weight: 600; font-size: 1.04em; color: var(--charcoal); margin: .52em 0 .22em; padding-inline-start: .55em; border-inline-start: .6mm solid var(--silver); line-height: 1.4; }
+.li { display: flex; gap: .4em; text-align: justify; margin-bottom: .2em; }
+.li-n { flex: none; min-width: 1.15em; }
+.li-t { flex: 1; min-width: 0; }
+.li-2 { padding-inline-start: 1.3em; }
+.li-b .li-t { font-weight: 500; }
+.split-head, .split-head .li-t { text-align-last: justify; }
+.split-tail .li-n { visibility: hidden; }
+.c-docs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .05em .9em; margin-bottom: .2em; }
+.c-docs .li { margin: 0; }
+.c-close { text-align: center; font-weight: 600; margin: .5em 0 .4em; }
+.fee-table { width: 100%; border-collapse: collapse; margin: .25em 0 .4em; font-size: .9em; line-height: 1.36; table-layout: fixed; }
+.fee-table th { background: var(--charcoal); color: #fff; font-weight: 500; padding: .35em .5em; border: .2mm solid var(--charcoal); text-align: center; }
+.fee-table td { padding: .24em .45em; border: .2mm solid var(--silver); text-align: center; vertical-align: middle; }
+.fee-table .n { width: 6mm; }
+.fee-table .c1 { width: 22%; }
+.fee-table .c2 { width: 18%; }
+.fee-table .c3 { width: 34%; }
+.fee-table .c4 { width: 23%; }
+.qt .fee-table { font-size: .86em; margin-bottom: 0; }
+.signs { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.signs th, .signs td { border: .2mm solid var(--silver); padding: .45em .8em; text-align: start; }
+.signs th { text-align: center; background: rgb(243 244 245 / .8); color: var(--charcoal); font-weight: 600; line-height: 1.45; }
+.signs th bdi { display: block; font-weight: 500; font-size: .94em; color: var(--ink); }
+.signs td { height: 2.9em; vertical-align: top; font-weight: 500; }
+
+/* ==========================================================================
+   3. Print: only the sheets, edge to edge on A4
+   ========================================================================== */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #fff; }
+  .q-bar, .q-form, .q-gate, .q-noscript { display: none !important; }
+  .q-app, .q-layout, .q-preview { display: block; padding: 0; margin: 0; overflow: visible; }
+  .q-stage { width: auto !important; height: auto !important; margin: 0; overflow: visible; }
+  .q-sheets { transform: none !important; width: 210mm; }
+  .sheet { height: 296.8mm; margin: 0; box-shadow: none; break-after: page; break-inside: avoid; }
+  .sheet:last-child { break-after: auto; }
+}

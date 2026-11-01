@@ -529,6 +529,7 @@
   const NAV = [
     { id: 'overview', perm: 'overview', icon: 'home' },
     { id: 'contracts', perm: 'contractsView', icon: 'doc' },
+    { id: 'quotes', perm: 'contractsCreate', icon: 'tag', href: 'quotation.html' }, // its own page, with its own access code
     { id: 'cases', perm: 'cases', icon: 'briefcase', soon: true },
     { id: 'appointments', perm: 'appointments', icon: 'calendar', soon: true },
     { id: 'clients', perm: 'clients', icon: 'users', soon: true },
@@ -582,7 +583,7 @@
     const nav = $('[data-portal-nav-list]');
     const current = (location.hash.split('/')[1] || 'overview');
     nav.innerHTML = NAV.filter((n) => can(n.perm)).map((n) => `
-      <li><a href="#/${n.id}"${n.id === current ? ' aria-current="page"' : ''}>${icon(n.icon)}<span>${esc(t('portal.nav.' + n.id))}</span>${n.soon ? `<em class="soon">${esc(t('portal.soon'))}</em>` : ''}</a></li>`).join('');
+      <li><a href="${n.href || '#/' + n.id}"${n.id === current ? ' aria-current="page"' : ''}>${icon(n.icon)}<span>${esc(t('portal.nav.' + n.id))}</span>${n.soon ? `<em class="soon">${esc(t('portal.soon'))}</em>` : ''}</a></li>`).join('');
     $('[data-user-role]').textContent = t('portal.roles.' + session.role);
   }
 
@@ -655,7 +656,7 @@
     return `
       <header class="p-head">
         <div><h1>${esc(t('portal.overview.hello'))}</h1><p>${esc(t('portal.overview.sub'))}</p></div>
-        ${can('contractsCreate') ? `<a class="btn btn-primary" href="#/contracts/new">${icon('plus')}<span>${esc(t('portal.overview.newContract'))}</span></a>` : ''}
+        ${can('contractsCreate') ? `<div class="p-head-actions"><a class="btn btn-ghost" href="quotation.html">${icon('tag')}<span>${esc(t('portal.overview.newQuote'))}</span></a><a class="btn btn-primary" href="#/contracts/new">${icon('plus')}<span>${esc(t('portal.overview.newContract'))}</span></a></div>` : ''}
       </header>
       ${showContracts ? `
       <ul class="kpis">${kpis.map(([k, v, ic]) => `<li class="kpi kpi-${k}">${icon(ic)}<strong>${v}</strong><span>${esc(t('portal.overview.kpi.' + k))}</span></li>`).join('')}</ul>
