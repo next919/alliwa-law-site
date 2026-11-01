@@ -63,7 +63,7 @@
     const say = (msg) => { err.textContent = msg; err.hidden = !msg; };
     if (failed) say('الرابط غير صحيح. اكتب رمز الدخول.');
     if (!window.crypto || !crypto.subtle || !window.QUOTATION_VAULT) say('تعذر فتح الصفحة في هذا المتصفح. جرّب متصفحًا آخر.');
-    input.focus();
+    if (matchMedia('(hover: hover)').matches) input.focus();   // on touch screens the keyboard opens only when the field is tapped
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const code = input.value.trim();
@@ -88,6 +88,7 @@
      ======================================================================= */
   let form = null;
   let startTouched = false;
+  let stale = false;   // the form has changes the sheets do not show yet
 
   const pad = (n) => String(n).padStart(2, '0');
   const todayIso = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -563,7 +564,6 @@
   // the preview shrinks to fit its column; the sheets keep their true size underneath
   function fitPreview() {
     const preview = $('[data-preview]'), stage = $('[data-stage]'), sheets = $('[data-sheets]');
-    sheets.style.transform = 'none';
     const style = getComputedStyle(preview);
     const room = preview.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     const full = sheets.offsetWidth;
@@ -573,9 +573,20 @@
     stage.style.height = Math.ceil(sheets.offsetHeight * scale) + 'px';
   }
 
-  function render() {
+  // what belongs to the form itself: light, and safe while typing
+  function updateForm() {
     const v = readValues();
     syncForm();
+    $('[data-pay-summary]').textContent = v.amount
+      ? `${v.freqText}: ${countWord(v.count)}، قيمة ${v.count === 1 ? 'الدفعة' : 'كل دفعة'} ${money(v.each)} ريال${v.last !== v.each ? ` والأخيرة ${money(v.last)} ريال` : ''}`
+      : 'اكتب المبلغ ويظهر هنا تقسيم الدفعات.';
+    saveDraft();
+  }
+
+  function render() {
+    stale = false;
+    const v = readValues();
+    updateForm();
     const sheets = $('[data-sheets]');
     const old = $('.sheet-quote', sheets);
     const holder = document.createElement('div');
@@ -585,9 +596,6 @@
     layoutContract(v);
     numberPages();
     fitPreview();
-    const box = $('[data-pay-summary]');
-    box.textContent = v.amount ? `${v.freqText}: ${countWord(v.count)}، قيمة ${v.count === 1 ? 'الدفعة' : 'كل دفعة'} ${money(v.each)} ريال${v.last !== v.each ? ` والأخيرة ${money(v.last)} ريال` : ''}` : '';
-    saveDraft();
     return v;
   }
 
@@ -596,16 +604,31 @@
      ======================================================================= */
   function checkRequired() {
     const v = readValues();
-    const err = $('[data-form-error]');
     const missing = [];
-    if (!v.p2name) missing.push(['p2name', 'اسم الطرف الثاني']);
-    if (!v.amount) missing.push(['amount', 'مبلغ الأتعاب']);
+    if (!v.p2name) missing.push('p2name');
+    if (!v.amount) missing.push('amount');
     $$('.is-missing', form).forEach((el) => el.classList.remove('is-missing'));
-    missing.forEach(([k]) => form.elements[k].classList.add('is-missing'));
-    err.hidden = !missing.length;
-    err.textContent = missing.length ? `قبل الطباعة اكتب: ${missing.map((m) => m[1]).join(' و')}.` : '';
-    if (missing.length) { form.elements[missing[0][0]].focus(); window.scrollTo(0, 0); }
+    missing.forEach((k) => form.elements[k].classList.add('is-missing'));
+    if (missing.length) form.elements[missing[0]].focus();
     return !missing.length;
+  }
+
+  // the keyboard's return key moves to the next field, and the last one closes the keyboard (as in js/main.js)
+  function setupEnterNext() {
+    const typed = (el) => el.matches('input:not([type="checkbox"]), select');
+    const nextField = (el) => {
+      const fields = Array.from(form.elements).filter((f) => typed(f) && f.getClientRects().length > 0);
+      return fields[fields.indexOf(el) + 1] || null;
+    };
+    form.addEventListener('focusin', (e) => {
+      if (e.target.matches('input:not([type="checkbox"])')) e.target.setAttribute('enterkeyhint', nextField(e.target) ? 'next' : 'done');
+    });
+    form.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229 || !e.target.matches('input:not([type="checkbox"])')) return;
+      e.preventDefault();
+      const next = nextField(e.target);
+      if (next) next.focus(); else e.target.blur();
+    });
   }
 
   function printFile() {
@@ -631,30 +654,44 @@
     const sheets = $('[data-sheets]');
     sheets.innerHTML = profileSheet() + '<section class="sheet-quote"></section>';
 
+    // On phones nothing on the page changes while a field is being typed in: the preview sits below the form,
+    // so it catches up when the field is left, when it comes into view, or at printing.
     let timer = 0;
-    const later = () => { clearTimeout(timer); timer = setTimeout(render, 120); };
+    const narrow = matchMedia('(max-width: 920px)');
+    const typing = () => narrow.matches && document.activeElement && document.activeElement.matches('[data-form] input:not([type="checkbox"])');
+    const later = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (stale && !typing()) render(); }, narrow.matches ? 300 : 120);
+    };
     form.addEventListener('input', (e) => {
       const f = form.elements;
       if (e.target === f.start) startTouched = true;
       if (e.target === f.contractDate && !startTouched) f.start.value = f.contractDate.value;
-      if (e.target.classList.contains('is-missing') && e.target.value.trim()) { e.target.classList.remove('is-missing'); $('[data-form-error]').hidden = true; }
+      if (e.target.classList.contains('is-missing') && e.target.value.trim()) e.target.classList.remove('is-missing');
+      stale = true;
+      updateForm();
       later();
     });
+    form.addEventListener('focusout', () => { if (stale) later(); });
+    if (window.IntersectionObserver) new IntersectionObserver((seen) => { if (stale && seen.some((x) => x.isIntersecting)) render(); }).observe($('[data-preview]'));
     form.addEventListener('submit', (e) => e.preventDefault());
-    $('[data-print]').addEventListener('click', printFile);
+    setupEnterNext();
+    $$('[data-print]').forEach((b) => b.addEventListener('click', printFile));
     $('[data-new]').addEventListener('click', () => {
       store.del(DRAFT_KEY, session());
       setDefaults();
-      $('[data-form-error]').hidden = true;
       $$('.is-missing', form).forEach((el) => el.classList.remove('is-missing'));
       render();
+      form.scrollTop = 0;
       window.scrollTo(0, 0);
     });
     $('[data-lock]').addEventListener('click', () => {
       store.del(CODE_KEY); store.del(CODE_KEY, session()); store.del(DRAFT_KEY, session());
       location.reload();
     });
-    window.addEventListener('resize', fitPreview);
+    // only a real width change: the phone's address bar and keyboard change the height alone
+    let width = window.innerWidth;
+    window.addEventListener('resize', () => { if (window.innerWidth !== width) { width = window.innerWidth; fitPreview(); } });
 
     render();
     // the page lays out again once the fonts arrive, since they change the measurements

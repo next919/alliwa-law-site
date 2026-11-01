@@ -72,6 +72,8 @@ Every typing field is at least 16px on touch screens, so iPhone never zooms in w
 is never left zoomed after typing); a quick double tap does not zoom either, while pinch-to-zoom stays available.
 The keyboard's return key says "Next" and moves to the next field; only the last field sends the form
 (`setupEnterNext()` in `js/main.js`; `data-enter-blur` on a field makes its return key just close the keyboard).
+`quotation.html` has its own stylesheet and script but follows the same rules. On phones, nothing on that page changes while a
+field is being typed in: no bar stays stuck to the screen, and the preview below the form updates when the field is left.
 
 ## Display options (demo)
 

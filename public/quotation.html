@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>عروض الأسعار</title>
   <meta name="description" content="">
   <meta name="robots" content="noindex, nofollow">
@@ -58,11 +58,9 @@
 
   <div class="q-layout">
     <form class="q-form" data-form novalidate autocomplete="off">
-      <p class="q-error" role="alert" data-form-error hidden></p>
-
       <fieldset class="q-group">
         <legend>الطرف الثاني</legend>
-        <label class="q-field"><span>اسم الطرف الثاني <em>*</em></span><input class="q-input" name="p2name" placeholder="مثال: شركة ..."></label>
+        <label class="q-field"><span>اسم الطرف الثاني <em>*</em></span><input class="q-input" name="p2name" placeholder="مثال: شركة ..."><small class="q-miss" role="alert">اكتب اسم الطرف الثاني قبل الطباعة.</small></label>
         <div class="q-row">
           <label class="q-field"><span>السجل التجاري</span><input class="q-input" name="p2cr" inputmode="numeric" dir="ltr"></label>
           <label class="q-field"><span>المدينة / العنوان</span><input class="q-input" name="p2address"></label>
@@ -111,7 +109,7 @@
 
       <fieldset class="q-group">
         <legend>الأتعاب</legend>
-        <label class="q-field"><span>المبلغ الإجمالي للعقد (ريال، قبل الضريبة) <em>*</em></span><input class="q-input" name="amount" inputmode="decimal" dir="ltr" placeholder="0"></label>
+        <label class="q-field"><span>المبلغ الإجمالي للعقد (ريال، قبل الضريبة) <em>*</em></span><input class="q-input" name="amount" inputmode="decimal" dir="ltr" placeholder="0"><small class="q-miss" role="alert">اكتب المبلغ قبل الطباعة.</small></label>
         <label class="q-field"><span>الدفع</span>
           <select class="q-input" name="freq">
             <option value="1">شهري</option>
@@ -166,6 +164,7 @@
         <label class="q-field"><span>مدينة الجهة القضائية المختصة</span><input class="q-input" name="jurisdiction"></label>
       </details>
 
+      <button class="q-btn q-btn-primary q-btn-block q-print-end" type="button" data-print><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg><span>طباعة / حفظ PDF</span></button>
       <button class="q-btn q-btn-ghost q-btn-block" type="button" data-new><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>عرض جديد (تفريغ النموذج)</span></button>
     </form>
 
