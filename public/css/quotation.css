@@ -111,14 +111,13 @@ fieldset .q-more summary { margin-bottom: .55rem; font-size: .88rem; font-weight
    ========================================================================== */
 .sheet {
   position: relative; display: flex; flex-direction: column;
-  width: 210mm; height: 297mm; margin: 0 0 7mm; overflow: hidden;
+  width: 210mm; height: 288mm; margin: 0 0 7mm; overflow: hidden;   /* see the note in section 3 */
   background: var(--paper); color: var(--ink); font-size: 10pt; line-height: 1.6;
   box-shadow: 0 1mm 5mm rgb(28 37 43 / .18);
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .sheet:last-child { margin-bottom: 0; }
 .sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.sheet::after { content: ""; position: absolute; inset: auto 0 0; height: 2.4mm; background: var(--charcoal); }
 :where(.sheet) :where(h1, h2, p, dl, dd, ul) { margin: 0; padding: 0; }
 .sheet ul { list-style: none; }
 .sheet bdi.v { font-weight: 500; }
@@ -135,7 +134,7 @@ fieldset .q-more summary { margin-bottom: .55rem; font-size: .88rem; font-weight
 .lh-logo { display: block; width: 50mm; height: auto; }
 .lh-meta { text-align: left; font-size: 8pt; color: var(--ink-soft); line-height: 1.5; }
 .lh-meta bdi { display: block; }
-.lf { position: relative; flex: none; margin: auto 16mm 0; padding: 2mm 0 5.6mm; border-top: .25mm solid var(--silver); display: flex; justify-content: space-between; gap: 6mm; font-size: 7.4pt; line-height: 1.45; color: var(--ink-soft); }
+.lf { position: relative; flex: none; margin: auto 16mm 0; padding: 2mm 0 2.5mm; border-top: .25mm solid var(--silver); display: flex; justify-content: space-between; gap: 6mm; font-size: 7.4pt; line-height: 1.45; color: var(--ink-soft); }
 .lf-sep { color: var(--silver); padding-inline: .5em; }
 .lf-page { white-space: nowrap; }
 
@@ -251,15 +250,19 @@ fieldset .q-more summary { margin-bottom: .55rem; font-size: .88rem; font-weight
 .signs td { height: 2.9em; vertical-align: top; font-weight: 500; }
 
 /* ==========================================================================
-   3. Print: only the sheets, edge to edge on A4
+   3. Print: only the sheets, one on each A4 page
+   Each sheet is 288mm tall, not the paper's 297mm. Browsers and phones print at slightly different
+   scales, and a sheet as tall as the paper spills its last millimetres onto an extra, nearly empty page.
    ========================================================================== */
 @media print {
   @page { size: A4 portrait; margin: 0; }
-  html, body { background: #fff; }
+  html, body { background: #fff; overflow: visible !important; }
   .q-bar, .q-form, .q-gate, .q-noscript { display: none !important; }
   .q-app, .q-layout, .q-preview { display: block; padding: 0; margin: 0; overflow: visible; }
   .q-stage { width: auto !important; height: auto !important; margin: 0; overflow: visible; }
   .q-sheets { transform: none !important; width: 210mm; }
-  .sheet { height: 296.8mm; margin: 0; box-shadow: none; break-after: page; break-inside: avoid; }
+  .sheet { margin: 0; box-shadow: none; break-after: page; break-inside: avoid; }
   .sheet:last-child { break-after: auto; }
+  /* iPhone uses its own paper and margins, and shrinks the page to fit its width: room at the sides keeps a sheet on one page, also on Letter paper */
+  @supports (-webkit-touch-callout: none) { .q-sheets { box-sizing: content-box; padding-inline: 7mm; } }
 }

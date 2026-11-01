@@ -216,7 +216,7 @@
      4. The sheets
      ======================================================================= */
   const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
-  const watermark = '<img class="sheet-wm" src="images/watermark.svg" alt="">';
+  const watermark = '<img class="sheet-wm" src="images/watermark-page.svg" alt="">';
 
   function footer() {
     const fm = V.firm, sep = '<span class="lf-sep">|</span>';
