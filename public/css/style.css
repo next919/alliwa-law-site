@@ -2341,7 +2341,6 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .contract-doc[lang="ar"] { font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; }
 .contract-doc :is(h2, h3, h4) { color: var(--char-900); letter-spacing: 0; }
 .contract-doc p { margin: 0 0 .4rem; }
-.cd-demo { margin: 0 0 1.25rem !important; padding: .35rem .75rem; border: 1px dashed #d9a441; border-radius: var(--radius-sm); background: #fff6df; color: #7a4f00; font-size: .78rem; font-weight: 700; text-align: center; }
 .cd-head { padding-bottom: 1.1rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--char-700); text-align: center; }
 .cd-brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--char-700); font-weight: 700; }
 .cd-brand img { width: auto; height: 42px; }
@@ -2367,10 +2366,8 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .cd-clauses > li { margin-bottom: .9rem; }
 .cd-clauses h4 { margin: 0 0 .15rem; font-size: 1rem; }
 /* numbered points inside an article: Arabic-Indic digits in Arabic, 1. 2. 3. in English */
-.cd-items { margin: .15rem 0 .35rem; padding-inline-start: 1.5rem; }
+.cd-items { margin: .15rem 0 .35rem; padding-inline-start: 1.5rem; list-style: decimal; }
 .cd-items li { margin-bottom: .15rem; padding-inline-start: .2rem; }
-.cd-items:lang(ar) { list-style: arabic-indic; }
-.cd-items:lang(en) { list-style: decimal; }
 
 /* watermark: the firm's logo (emblem + Arabic and English name), faint behind the text. On screen it repeats down
    the sheet about once a page; in print it sits in the middle of every page. File: images/watermark.svg */
@@ -2392,7 +2389,6 @@ html[data-theme="dark"] .toast { box-shadow: var(--shadow-lg), inset 0 0 0 1px r
 .contract-bi .cd-l[lang="en"] { font-family: "Inter", system-ui, sans-serif; }
 .contract-bi .cd-brand .cd-l[lang="en"], .contract-bi .cd-meta dt .cd-l[lang="en"], .contract-bi .cd-sign .cd-l[lang="en"], .contract-bi .cd-foot .cd-l[lang="en"] { font-size: .9em; }
 .contract-bi .cd-title .cd-l[lang="en"] { margin-top: .1rem; color: var(--doc-muted); font-size: .62em; font-weight: 600; letter-spacing: .03em; }
-.contract-bi .cd-demo .cd-l + .cd-l { margin-top: .1rem; }
 .contract-bi .cd-hijri[lang="en"] { display: block; }
 .cd-bi { width: 100%; margin: 1.25rem 0 1.5rem; border-collapse: collapse; table-layout: fixed; font-size: .88rem; line-height: 1.75; }
 .cd-bi th, .cd-bi td { width: 50%; padding: .7rem .9rem; border: 1px solid var(--doc-line); vertical-align: top; }

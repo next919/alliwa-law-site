@@ -125,10 +125,11 @@ to the new domain.
   *Send confirmation to the firm* (WhatsApp to the firm's number, or copy) → opening that confirmation link in the
   portal marks the agreement *Signed* with the signature, the time and the history. *Print / save as PDF* gives a
   clean A4 copy: the agreement number and page numbers at the foot of every page (Chrome / Edge), the firm's logo
-  as a faint watermark on every page (`images/watermark.svg`; on screen it repeats down the sheet), a "demo
-  template" notice on every page, and the fees summary kept with the signatures.
+  as a faint watermark on every page (`images/watermark.svg`; on screen it repeats down the sheet), and the
+  fees summary kept with the signatures. The agreement never says "demo", on screen or in print, so the firm can
+  print a real one; the licence line appears once `licence` has the number in `data/settings.js`.
 - **Bilingual agreements:** a two-column table, English left and Arabic right, each article under a dark heading
-  row ("Article 5: … | البند الخامس: …"), numbered points (1. 2. 3. / ١. ٢. ٣.), a language clause (the Arabic text
+  row ("Article 5: … | البند الخامس: …"), numbered points (1. 2. 3.), a language clause (the Arabic text
   prevails) and the firm's logo as a faint watermark. The form marks the main fields AR and adds English fields
   (marked EN) for the free text; names, numbers and amounts are entered once. Each text needs its counterpart in
   the other language, and each column must be in its own language, so the two versions always match. Switching a
@@ -144,7 +145,7 @@ to the new domain.
   matrix is on *Users & permissions*, which also has *Reset demo data*.
 - **Cases, appointments, clients, documents, invoices** are marked *Soon* with the planned features.
 - The agreement text is under `contract` in `data/portal-ar.js` / `data/portal-en.js`: a draft for the firm
-  to review. Every copy is marked "demo template — not valid for use".
+  to review before it is used with a client.
 
 **This is a front-end demo, not a secure system:** the account is checked in the browser, the portal's list is
 kept in that browser (localStorage), and the signature returns through the confirmation link instead of a server.

@@ -193,7 +193,6 @@
       title: "No access",
       text: "This section is not available to the “{role}” role. Change the role in “View as” to try other permissions."
     },
-    sample: "demo",
     money: "SAR {n}"
   };
 
@@ -245,7 +244,6 @@
     title: "Legal Fee Agreement",
     no: "Agreement no.",
     date: "Created on",
-    demoMark: "Demo template — not valid for use",
     partyA: "First party",
     partyB: "Second party (client)",
     firmName: "Khalid Allewa Lawyers and Consultants",

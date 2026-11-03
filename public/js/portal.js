@@ -63,7 +63,7 @@
     return { amount, vat: 0, total: amount };
   }
   const memberName = (id, l) => t('team.members.' + id + '.name', l);
-  const licenceNo = (l) => { const m = (S.licence || []).find((x) => x.id === 'moj'); return (m && m.number) || t('licence.pending', l); };
+  const licenceNo = () => { const m = (S.licence || []).find((x) => x.id === 'moj'); return (m && m.number) || ''; };
 
   async function sha256(text) {
     try {
@@ -79,19 +79,18 @@
   // ---------- the demo agreements ----------
   function seed() {
     const now = Date.now(), day = 864e5, hr = 36e5;
-    const tag = ' (' + t('portal.sample', 'ar') + ')';
     return [
       {
         id: 'FA-2026-0003', status: 'draft', lang: 'both', createdAt: now - 2 * hr, updatedAt: now - 2 * hr, lawyer: 'khalid',
-        client: { name: 'مؤسسة النموذج للمقاولات' + tag, idType: 'cr', idNumber: '7000000003', phone: '0500000003', email: 'client3@example.com', address: 'الجبيل الصناعية', rep: 'عبدالله محمد' + tag, repCapacity: 'مالك المؤسسة' },
+        client: { name: 'مؤسسة النموذج للمقاولات', idType: 'cr', idNumber: '7000000003', phone: '0500000003', email: 'client3@example.com', address: 'الجبيل الصناعية', rep: 'عبدالله محمد', repCapacity: 'مالك المؤسسة' },
         matter: { area: 'commercial', title: 'صياغة ومراجعة عقود توريد', scope: 'مراجعة نماذج عقود التوريد الحالية، وصياغة نموذج موحد، وتقديم مذكرة بالملاحظات النظامية.' },
         fees: { amount: 12000, vat: 'excl', schedule: 'two', custom: '' }, duration: '', city: 'الجبيل', terms: '',
-        en: { clientName: 'Al Namoothaj Contracting Est. (demo)', address: 'Jubail Industrial City', title: 'Drafting and reviewing supply contracts', scope: 'Reviewing the current supply contract templates, drafting a unified template, and providing a memo of legal observations.', custom: '', duration: '', city: 'Jubail', terms: '', rep: 'Abdullah Mohammed (demo)', repCapacity: 'Owner of the establishment' },
+        en: { clientName: 'Al Namoothaj Contracting Est.', address: 'Jubail Industrial City', title: 'Drafting and reviewing supply contracts', scope: 'Reviewing the current supply contract templates, drafting a unified template, and providing a memo of legal observations.', custom: '', duration: '', city: 'Jubail', terms: '', rep: 'Abdullah Mohammed', repCapacity: 'Owner of the establishment' },
         events: [{ type: 'created', at: now - 2 * hr }],
       },
       {
         id: 'FA-2026-0002', status: 'sent', lang: 'ar', createdAt: now - 3 * day, updatedAt: now - 2 * day, lawyer: 'khalid',
-        client: { name: 'عميل تجريبي ثانٍ', idType: 'id', idNumber: '1000000002', phone: '0500000002', email: 'client2@example.com', address: 'الجبيل' },
+        client: { name: 'عميل ثانٍ', idType: 'id', idNumber: '1000000002', phone: '0500000002', email: 'client2@example.com', address: 'الجبيل' },
         matter: { area: 'labor', title: 'الترافع في دعوى عمالية', scope: 'دراسة القضية، وإعداد المذكرات، والترافع أمام المحكمة العمالية حتى صدور الحكم الابتدائي.' },
         fees: { amount: 15000, vat: 'excl', schedule: 'full', custom: '' }, duration: '', city: 'الجبيل', terms: '',
         token: 'demo0002', hash: '',
@@ -99,14 +98,28 @@
       },
       {
         id: 'FA-2026-0001', status: 'signed', lang: 'ar', createdAt: now - 9 * day, updatedAt: now - 7 * day, lawyer: 'khalid',
-        client: { name: 'عميل تجريبي أول', idType: 'id', idNumber: '1000000001', phone: '0500000001', email: 'client1@example.com', address: 'الجبيل' },
+        client: { name: 'عميل أول', idType: 'id', idNumber: '1000000001', phone: '0500000001', email: 'client1@example.com', address: 'الجبيل' },
         matter: { area: 'realestate', title: 'استشارة ومتابعة نزاع عقاري', scope: 'دراسة مستندات العقار، وتقديم الاستشارة، ومتابعة النزاع ودّيًا أو قضائيًا حتى صدور الحكم الابتدائي.' },
         fees: { amount: 20000, vat: 'excl', schedule: 'two', custom: '' }, duration: '', city: 'الجبيل', terms: '',
         token: 'demo0001', hash: '',
-        signature: { method: 'typed', name: 'عميل تجريبي أول', at: now - 7 * day },
+        signature: { method: 'typed', name: 'عميل أول', at: now - 7 * day },
         events: [{ type: 'created', at: now - 9 * day }, { type: 'sent', at: now - 8 * day }, { type: 'viewed', at: now - 7 * day - 3 * hr }, { type: 'signed', at: now - 7 * day }],
       },
     ];
+  }
+  // A browser that saved the samples before the word came off their names gets them without it, and keeps everything
+  // else. The fingerprint covers the names, so it is taken again the next time the agreement is shown.
+  const SAMPLE_IDS = ['1000000001', '1000000002', '7000000003'];
+  function cleanSamples(list) {
+    const clean = (s) => s.replace(/\s*\((?:تجريبي|demo)\)/g, '').replace(/\s*تجريبي/g, '');
+    let changed = false;
+    list.forEach((c) => {
+      if (!c || !c.client || !SAMPLE_IDS.includes(c.client.idNumber)) return;
+      [[c.client, 'name'], [c.client, 'rep'], [c.en, 'clientName'], [c.en, 'rep'], [c.signature, 'name']].forEach(([o, k]) => {
+        if (o && typeof o[k] === 'string' && clean(o[k]) !== o[k]) { o[k] = clean(o[k]); c.hash = ''; changed = true; }
+      });
+    });
+    return changed;
   }
   let contracts = null;
   function load() {
@@ -119,6 +132,7 @@
         && (c.events || []).length === 1 && c.client && c.client.idNumber === '7000000003' && !c.client.rep);
       if (i >= 0) { contracts[i] = seed()[0]; save(); }
     }
+    if (cleanSamples(contracts)) save();
     return contracts;
   }
   function save() { store.set(DATA_KEY, JSON.stringify(contracts)); }
@@ -316,7 +330,7 @@
     const lawyer = c.lawyer || 'khalid';
     const partyA = `<h3>${esc(T('partyA'))}</h3><p class="cd-party-name">${esc(T('firmName'))}</p>`
       + `<p>${esc(fill(T('firmRep'), { lawyer: memberName(lawyer, L), role: t('team.members.' + lawyer + '.role', L) }))}</p>`
-      + `<p>${esc(fill(T('firmLicence'), { licence: licenceNo(L) }))}</p><p>${esc(T('firmCity'))}</p>`;
+      + (licenceNo() ? `<p>${esc(fill(T('firmLicence'), { licence: licenceNo() }))}</p>` : '') + `<p>${esc(T('firmCity'))}</p>`;
     const partyB = `<h3>${esc(T('partyB'))}</h3><p class="cd-party-name">${esc(f.clientName)}</p>`
       + (f.rep ? `<p>${esc(fill(T('clientRep'), { rep: f.rep, capacity: f.capacity || '—' }))}</p>` : '')
       + `<dl>${row(T('idLabels.' + (c.client.idType || 'id')), c.client.idNumber)}${row(T('labels.phone'), c.client.phone)}`
@@ -374,7 +388,6 @@
     const d = docParts(c, L), T = d.T;
     return `
 <article class="contract-doc" lang="${L}" dir="${L === 'ar' ? 'rtl' : 'ltr'}">
-  <p class="cd-demo">${esc(T('demoMark'))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${esc(T('firmName'))}</span></div>
     <h2 class="cd-title">${esc(T('title'))}</h2>
@@ -418,7 +431,6 @@
     }
     return `
 <article class="contract-doc contract-bi" lang="ar" dir="rtl">
-  <p class="cd-demo">${per(LL, (L) => t('contract.demoMark', L))}</p>
   <header class="cd-head">
     <div class="cd-brand"><img src="images/logo-mark-dark.svg" alt="" width="34" height="52"><span>${per(LL, (L) => t('contract.firmName', L))}</span></div>
     <h2 class="cd-title">${per(LL, (L) => t('contract.title', L))}</h2>
@@ -440,13 +452,10 @@
   function printContract(c) {
     let root = $('#print-root');
     if (!root) { root = document.createElement('div'); root.id = 'print-root'; document.body.appendChild(root); }
-    // every page, in its margins (browsers that support page margin boxes): the demo notice at the top,
-    // the agreement number and "page / pages" at the foot
+    // every page, in its margins (browsers that support page margin boxes): the agreement number and "page / pages" at the foot
     const no = String(c.id).replace(/[^\w-]/g, '');
-    const demo = (isBi(c) ? ['ar', 'en'] : [c.lang === 'en' ? 'en' : 'ar']).map((L) => t('contract.demoMark', L)).join('   ·   ');
     root.innerHTML = renderContract(c)
-      + `<style>@page { @top-center { content: ${JSON.stringify(demo).replace(/</g, '')}; font: 700 8pt "IBM Plex Sans Arabic", "Inter", sans-serif; color: #9a6a00; }`
-      + ` @bottom-center { content: "${no}  ·  " counter(page) " / " counter(pages); font: 8pt "Inter", system-ui, sans-serif; color: #5f6b74; } }</style>`;
+      + `<style>@page { @bottom-center { content: "${no}  ·  " counter(page) " / " counter(pages); font: 8pt "Inter", system-ui, sans-serif; color: #5f6b74; } }</style>`;
     // the page title becomes the suggested file name of the PDF
     const title = document.title;
     document.title = t('contract.title', isBi(c) ? lang() : c.lang === 'en' ? 'en' : 'ar') + ' ' + c.id;
